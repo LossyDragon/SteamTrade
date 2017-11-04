@@ -221,15 +221,15 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 
 
     //TODO: onPause or onDestroy is naughty. blanks chat when youtube PiP is focused (android M+)
-    //@Override
-    //public void onPause() {
-    //    super.onPause();
-    //
-    //    adapter.changeCursor(null);
-    //
-    //    if (SteamService.singleton != null && SteamService.singleton.chatManager != null && SteamService.singleton.chatManager.receivers != null)
-    //        SteamService.singleton.chatManager.receivers.remove(this);
-    //}
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        adapter.changeCursor(null);
+
+        if (SteamService.singleton != null && SteamService.singleton.chatManager != null && SteamService.singleton.chatManager.receivers != null)
+            SteamService.singleton.chatManager.receivers.remove(this);
+    }
 
     @Override
     public void onDestroy() {

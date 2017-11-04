@@ -25,7 +25,7 @@ android:padding="8dp">
     android:textAppearance="@style/TextAppearance.AppCompat.Large"
     android:textSize="36sp"
     android:textStyle="bold"
-    tools:text="STEAM"/>
+    tools:text="A2X4Y"/>
 
 <ProgressBar
     android:id="@+id/steamguard_time"

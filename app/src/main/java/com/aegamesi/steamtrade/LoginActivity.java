@@ -564,10 +564,14 @@ public class LoginActivity extends AppCompatActivity {
 
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
 
-            Picasso.with(getApplicationContext())
-                    .load(sharedPreferences.getString("avatar_" + account.username, ""))
-                    .placeholder(R.drawable.default_avatar)
-                    .into(holder.avatar);
+            String isEmpty = sharedPreferences.getString("avatar_" + account.username, "");
+
+            if (isEmpty != "") {
+                Log.d("Picasso Login loader", "loaded, isEmpty:" + isEmpty + " -End");
+                Picasso.with(getApplicationContext())
+                        .load(isEmpty)
+                        .into(holder.avatar);
+            }
 
             holder.buttonRemove.setTag(position);
             holder.itemView.setTag(position);
