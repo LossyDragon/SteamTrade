@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/friends_list_item"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    >
+    <LinearLayout
+        android:id="@+id/friend_profiler"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:gravity="start"
+        android:orientation="horizontal">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/friend_avatar_left"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_gravity="center"
+            android:layout_margin="12dp"
+            android:contentDescription="@string/steam_avatar"
+            android:src="@drawable/default_avatar"
+            app:civ_border_color="@color/steam_offline"
+            app:civ_border_width="2dip" />
+
+        <LinearLayout
+            android:id="@+id/friend_bg"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/friend_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="#ffffffff"
+                android:textSize="16sp"
+                tools:text="Name"/>
+
+            <TextView
+                android:id="@+id/friend_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textSize="14sp"
+                tools:text="Status"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/friend_chat_button"
+        android:layout_width="40dip"
+        android:layout_height="40dip"
+        android:layout_margin="8dip"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/chat"
+        android:src="@drawable/ic_comment"/>
+
+    <ImageButton
+        android:id="@+id/friend_request_accept"
+        android:layout_width="40dip"
+        android:layout_height="40dip"
+        android:layout_margin="8dip"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/friend_accept"
+        android:src="@drawable/ic_yes"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/friend_request_reject"
+        android:layout_width="40dip"
+        android:layout_height="40dip"
+        android:layout_margin="8dip"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/friend_request_ignore"
+        android:src="@drawable/ic_no"
+        android:visibility="gone"/>
+</LinearLayout>

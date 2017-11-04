@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Menu options within a Friend Chat -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/fragment_chat"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="@string/library_sort"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/friend_profile_page"
+                android:title="@string/friend_profile_page"/>
+        </menu>
+    </item>
+</menu>
