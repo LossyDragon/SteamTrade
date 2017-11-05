@@ -231,10 +231,10 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
     //        SteamService.singleton.chatManager.receivers.remove(this);
     //}
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
+    //@Override
+    //public void onDestroy() {
+    //    super.onDestroy();
+    //}
 
     @Nullable
     private Cursor fetchCursor() {

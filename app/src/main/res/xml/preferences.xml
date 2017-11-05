@@ -58,8 +58,9 @@
         android:summary="@string/pref_recent_chats_summ"
         android:title="@string/pref_recent_chats"
         />
+    <!--Hide blocked users by default-->
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:key="pref_hide_blocked_users"
         android:title="@string/pref_hide_blocked_users"
         />

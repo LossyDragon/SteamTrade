@@ -33,11 +33,10 @@ public class SteamUtil {
 		//TODO add url hint for the below url regex (Security reasons)?
 		bbCodeMap.put("(?i)\\[url=(.+?)\\](.+?)\\[/url\\]", "<a href=\"$1\">$2</a>");
 		bbCodeMap.put("(?i)\\[noparse\\](.+?)\\[/noparse\\]", "$1");//10-30-2017 added NoParse
-		bbCodeMap.put("(?i)\\((https?|ftp|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]+)", "<a href=\"$1\">$1</a>");
 
 		// this wonderful piece of regex matches all links that *aren't* already parsed... and parses them.
-		//11-5-2017, top hyphen breaking in URLs. (Removed for now as there bbCode clashing.
-		//bbCodeMap.put("(?i)(?<![\\\"\\'])(?<![\\\"\\']>)((https?|ftp|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]+)", "<a href=\"$1\">$1</a>");
+		//11-5-2017, top hyphen breaking in URLs.TODO(this bbCode clashes)
+		bbCodeMap.put("(?i)(?<![\\\"\\'])(?<![\\\"\\']>)((https?|ftp|http)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]+)", "<a href=\"$1\">$1</a>");
 		//bbCodeMap.put("(?i)(?<![\\\"\\'])(?<![\\\"\\']>)((http|https|ftp):\\/\\/[\\w?=&.\\/--;#~%-,]+)", "<a href=\"$1\">$1</a>");
 		//bbCodeMap.put("(?i)(?<!=\")((?:\\b[a-zA-Z]+:\\/\\/)?[a-zA-Z0-9\\-?&;#~=\\.\\/\\@]+\\.[a-zA-Z]{3,6})", "<a href=\"$1\">$1</a>");
 	}

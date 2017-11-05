@@ -1,5 +1,6 @@
 package com.aegamesi.steamtrade.steam;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -161,27 +162,36 @@ public class SteamService extends Service {
             if (notificationManager != null)
                 notificationManager.createNotificationChannel(notificationChannel);
 
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Integer.toString(NOTIFICATION_ID));
-            builder.setSmallIcon(R.drawable.ic_notify_online);
-            builder.setContentTitle(getString(R.string.app_name));
-            builder.setContentText(getResources().getStringArray(R.array.connection_status)[code]);
-            builder.setContentIntent(contentIntent);
-            builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-            builder.setOnlyAlertOnce(true);
-            builder.setPriority(NotificationCompat.PRIORITY_MIN);
+            //New notification, perma-collapsed as its only an "online" indicator.
+			Notification notification = new Notification.Builder(this, Integer.toString(NOTIFICATION_ID))
+					.setSmallIcon(R.drawable.ic_notify_online)
+					.setSubText(getResources().getStringArray(R.array.connection_status)[code])
+					.setContentIntent(contentIntent)
+					.build();
+
+			//Old Notification code.
+            //NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Integer.toString(NOTIFICATION_ID));
+            //builder.setSmallIcon(R.drawable.ic_notify_online);
+            //builder.setContentTitle(getString(R.string.app_name));
+            //builder.setContentText(getResources().getStringArray(R.array.connection_status)[code]);
+            //builder.setContentIntent(contentIntent);
+            //builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            //builder.setOnlyAlertOnce(true);
+            //builder.setPriority(NotificationCompat.PRIORITY_MIN);
             //builder.setOngoing(true);
 
 			if (steamClient != null) {
 				SteamNotifications steamNotifications = steamClient.getHandler(SteamNotifications.class);
-				if (steamNotifications != null)
-					builder.setContentInfo(steamNotifications.getTotalNotificationCount() + "");
+				//if (steamNotifications != null)
+					//notification.setContentInfo(steamNotifications.getTotalNotificationCount() + "");
 			}
 
 			if (update) {
 			    if(notificationManager != null)
-					notificationManager.notify(NOTIFICATION_ID, builder.build());
+					notificationManager.notify(NOTIFICATION_ID, notification);
 			} else {
-				startForeground(NOTIFICATION_ID, builder.build());
+				//startForeground(NOTIFICATION_ID, builder.build());
+				startForeground(NOTIFICATION_ID, notification);
 			}
 		}
 	}
