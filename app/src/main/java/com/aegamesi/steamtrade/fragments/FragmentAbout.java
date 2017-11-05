@@ -34,7 +34,7 @@ public class FragmentAbout extends FragmentBase {
 
 		TextView textAbout = v.findViewById(R.id.ice_text_about);
 		textAbout.setMovementMethod(LinkMovementMethod.getInstance());
-		textAbout.setText(Html.fromHtml(getString(R.string.ice_about)));
+		textAbout.setText(Html.fromHtml(getString(R.string.ice_about), Html.FROM_HTML_MODE_LEGACY));
 
 		return v;
 	}

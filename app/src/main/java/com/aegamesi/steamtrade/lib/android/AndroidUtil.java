@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 import android.util.Base64;
@@ -44,16 +45,17 @@ public class AndroidUtil {
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@SuppressWarnings("deprecation")
 	public static void copyToClipboard(Context context, String str) {
 		int sdk = android.os.Build.VERSION.SDK_INT;
 		if (sdk >= android.os.Build.VERSION_CODES.HONEYCOMB) {
 			android.content.ClipboardManager clipboard = (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 			android.content.ClipData clip = android.content.ClipData.newPlainText("Chat Line", str);
+			assert clipboard != null;
 			clipboard.setPrimaryClip(clip);
 		} else {
 			android.text.ClipboardManager clipboard = (android.text.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+			assert clipboard != null;
 			clipboard.setText(str);
 		}
 	}
@@ -84,13 +86,6 @@ public class AndroidUtil {
 			e.printStackTrace();
 		}
 		// field wasn't found
-		return null;
-	}
-
-	private static <T> T firstNonNull(T... objs) {
-		for (T obj : objs)
-			if (obj != null)
-				return obj;
 		return null;
 	}
 

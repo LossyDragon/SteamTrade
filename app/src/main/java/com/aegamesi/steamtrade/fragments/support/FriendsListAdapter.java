@@ -35,8 +35,6 @@ import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends;
 import uk.co.thomasc.steamkit.types.steamid.SteamID;
 
-//TODO: getColor() deprecated.
-//TODO: Option to sort alphabetically? (L483)
 public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 	public List<SteamID> recentChats = null;
 	private List<FriendListItem> filteredDataset;
@@ -289,13 +287,13 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
 
 			Resources resources = holder.itemView.getContext().getResources();
-			int color = resources.getColor(R.color.steam_online);
+			int color = resources.getColor(R.color.steam_online, null);
 			if (p.category == FriendListCategory.BLOCKED)
-				color = resources.getColor(R.color.steam_blocked);
+				color = resources.getColor(R.color.steam_blocked, null);
 			else if (p.game != null && p.game.length() > 0)
-				color = resources.getColor(R.color.steam_game);
+				color = resources.getColor(R.color.steam_game, null);
 			else if (p.state == EPersonaState.Offline || p.state == null)
-				color = resources.getColor(R.color.steam_offline);
+				color = resources.getColor(R.color.steam_offline, null);
 
 			holder.textName.setTextColor(color);
 			holder.textStatus.setTextColor(color);
@@ -313,10 +311,10 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
 				holder.buttonChat.setVisibility((p.relationship == EFriendRelationship.Friend) ? View.VISIBLE : View.GONE);
 				if (SteamService.singleton.chatManager.unreadMessages.contains(p.steamid)) {
-					holder.buttonChat.setColorFilter(resources.getColor(R.color.steam_online), Mode.MULTIPLY);
+					holder.buttonChat.setColorFilter(resources.getColor(R.color.steam_online, null), Mode.MULTIPLY);
 					holder.buttonChat.setImageResource(R.drawable.ic_comment_processing);
 				} else {
-					holder.buttonChat.setColorFilter(resources.getColor(R.color.steam_offline), Mode.MULTIPLY);
+					holder.buttonChat.setColorFilter(resources.getColor(R.color.steam_offline, null), Mode.MULTIPLY);
 					holder.buttonChat.setImageResource(R.drawable.ic_comment);
 				}
 
@@ -339,7 +337,6 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 			if (p.avatar_url != null) {
 				//ImageLoader.getInstance().displayImage(p.avatar_url, holder.imageAvatar);
 
-				//(new)Picasso shit. Obsolete Image Loader time
 				Picasso.with(holder.itemView.getContext())
 						.load(p.avatar_url)
 						.into(holder.imageAvatar);
@@ -380,7 +377,13 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 	}
 
 	public enum FriendListCategory {
-		FRIENDREQUEST(0, "Friend Requests"), RECENTCHAT(1, "Recent Chats"), INGAME(2, "In-Game"), ONLINE(3, "Online"), OFFLINE(4, "Offline"), REQUESTPENDING(5, "Pending Friend Requests"), BLOCKED(6, "Blocked");
+		FRIENDREQUEST(0, "Friend Requests"),
+		RECENTCHAT(1, "Recent Chats"),
+		INGAME(2, "In-Game"),
+		ONLINE(3, "Online"),
+		OFFLINE(4, "Offline"),
+		REQUESTPENDING(5, "Pending Friend Requests"),
+		BLOCKED(6, "Blocked");
 
 		public final int order;
 		private final String text;
@@ -390,6 +393,7 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 			this.text = text;
 		}
 
+		@SuppressWarnings("unused")
 		@Nullable
         public static FriendListCategory f(int order) {
 			for (int i = 0; i < values().length; i++)
@@ -446,9 +450,12 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 		}
 
 		private FriendListCategory findCategory() {
-			if ((recentChats != null && recentChats.contains(steamid)) || SteamService.singleton.chatManager.unreadMessages.contains(steamid))
+			if ((recentChats != null && recentChats.contains(steamid)) ||
+					SteamService.singleton.chatManager.unreadMessages.contains(steamid))
 				return FriendListCategory.RECENTCHAT;
-			if (relationship == EFriendRelationship.Blocked || relationship == EFriendRelationship.Ignored || relationship == EFriendRelationship.IgnoredFriend)
+			if (relationship == EFriendRelationship.Blocked ||
+					relationship == EFriendRelationship.Ignored ||
+					relationship == EFriendRelationship.IgnoredFriend)
 				return FriendListCategory.BLOCKED;
 			if (relationship == EFriendRelationship.RequestRecipient)
 				return FriendListCategory.FRIENDREQUEST;
@@ -480,11 +487,13 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 				int bPosition = recentChats.indexOf(other.steamid);
 				return AndroidUtil.numCompare(aPosition, bPosition);
 			}
-			// sort offline friends by last time online
+			// sort offline friends alphabetically. Not by last time online
 			if (category == FriendListCategory.OFFLINE) {
-				return -AndroidUtil.numCompare(lastOnline, other.lastOnline);
+				//return -AndroidUtil.numCompare(lastOnline, other.lastOnline);
+				return this.name.toLowerCase(Locale.getDefault()).compareTo(other.name.toLowerCase(Locale.getDefault()));
 			}
 
+			//Compare online friends alphabetically.
 			compare = this.name.toLowerCase(Locale.getDefault()).compareTo(other.name.toLowerCase(Locale.getDefault()));
 			return compare;
 		}

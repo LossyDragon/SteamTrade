@@ -76,17 +76,8 @@ public class FragmentWeb extends FragmentBase {
 		super.onResume();
 		setTitle(getString(R.string.nav_browser));
 
-		Bundle args = getArguments();
-		if (args != null) {
-			String[] tabNames = args.getStringArray("tabs");
-			if (tabNames != null) {
-				final String[] tabUrls = args.getStringArray("tabUrls");
-				if (tabUrls != null && tabUrls.length == tabNames.length) {
-				}
-			}
-		}
-
 		if (web_view != null) {
+			//noinspection deprecation
 			CookieSyncManager.createInstance(activity());
 			forceDesktop = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_desktop_mode", false);
 			updateCookies();

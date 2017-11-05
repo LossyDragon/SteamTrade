@@ -209,7 +209,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 			String summary_raw = profile_info.getSummary();
 			String summary = SteamUtil.parseBBCode(summary_raw);
 			Html.ImageGetter imageGetter = new UILImageGetter(summaryView, summaryView.getContext());
-			summaryView.setText(Html.fromHtml(summary, imageGetter, null));
+			summaryView.setText(Html.fromHtml(summary, Html.FROM_HTML_MODE_LEGACY, imageGetter, null));
 			summaryView.setMovementMethod(new LinkMovementMethod());
 		}
 

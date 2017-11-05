@@ -23,7 +23,7 @@
             android:id="@+id/drawer_avatar"
             android:layout_width="80dip"
             android:layout_height="80dip"
-            android:src="@drawable/ic_launcher"
+            android:src="@drawable/default_avatar"
             app:civ_border_color="@color/steam_online"
             app:civ_border_width="2dip" />
 

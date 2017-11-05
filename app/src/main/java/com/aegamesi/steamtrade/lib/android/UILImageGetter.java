@@ -41,18 +41,18 @@ public class UILImageGetter implements Html.ImageGetter {
 
 	//private class SimpleListener extends SimpleImageLoadingListener {
 	//	ContainerDrawable containerDrawable;
-//
+	//
 	//	public SimpleListener(ContainerDrawable downloader) {
 	//		super();
 	//		containerDrawable = downloader;
 	//	}
-//
+	//
 	//	@Override
 	//	public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
 	//		Log.d("UILImageGetter", "Done loading " + imageUri);
-//
+	//
 	//		containerDrawable.setBitmap(loadedImage);
-//
+	//
 	//		textView.getParent().requestLayout();
 	//		textView.invalidate();
 	//		textView.invalidateDrawable(containerDrawable);
@@ -64,7 +64,7 @@ public class UILImageGetter implements Html.ImageGetter {
 	private class ContainerDrawable extends ColorDrawable {
 		private Drawable innerDrawable = null;
 
-		public ContainerDrawable(int w, int h, int color) {
+		private ContainerDrawable(int w, int h, int color) {
 			super(color);
 
 			setBounds(0, 0, w, h);

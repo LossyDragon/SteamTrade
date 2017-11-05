@@ -1,5 +1,6 @@
 package com.aegamesi.steamtrade.steam;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -154,14 +155,21 @@ public class SteamService extends Service {
 			notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Integer.toString(NOTIFICATION_ID));
-			builder.setSmallIcon(R.drawable.ic_notify_online);
-			builder.setContentTitle(getString(R.string.app_name));
-			builder.setContentText(getResources().getStringArray(R.array.connection_status)[code]);
-			builder.setContentIntent(contentIntent);
-			builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-			builder.setOnlyAlertOnce(true);
-			builder.setPriority(NotificationCompat.PRIORITY_MIN);
+			//We need this to create a Notification Channel ID (on 1st installation), Android O.
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel notificationChannel = new NotificationChannel(Integer.toString(NOTIFICATION_ID), "Ice Foreground Service", NotificationManager.IMPORTANCE_LOW);
+            if (notificationManager != null)
+                notificationManager.createNotificationChannel(notificationChannel);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, Integer.toString(NOTIFICATION_ID));
+            builder.setSmallIcon(R.drawable.ic_notify_online);
+            builder.setContentTitle(getString(R.string.app_name));
+            builder.setContentText(getResources().getStringArray(R.array.connection_status)[code]);
+            builder.setContentIntent(contentIntent);
+            builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+            builder.setOnlyAlertOnce(true);
+            builder.setPriority(NotificationCompat.PRIORITY_MIN);
+            //builder.setOngoing(true);
 
 			if (steamClient != null) {
 				SteamNotifications steamNotifications = steamClient.getHandler(SteamNotifications.class);
@@ -170,10 +178,8 @@ public class SteamService extends Service {
 			}
 
 			if (update) {
-				NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-				if (notificationManager != null) {
+			    if(notificationManager != null)
 					notificationManager.notify(NOTIFICATION_ID, builder.build());
-				}
 			} else {
 				startForeground(NOTIFICATION_ID, builder.build());
 			}
@@ -261,6 +267,7 @@ public class SteamService extends Service {
                 buildNotification(SteamConnectionListener.STATUS_FAILURE, true);
 
                 ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                assert cm != null;
                 NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
                 boolean connected = activeNetwork != null && activeNetwork.isConnected();
@@ -494,7 +501,14 @@ public class SteamService extends Service {
 							if (steamFriends.getFriendRelationship(id) == EFriendRelationship.RequestRecipient)
 								friendRequests++;
 
-						// create a notification
+
+                        //We need this to create a Notification Channel ID (on 1st installation), Android O.
+                        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                        NotificationChannel notificationChannel = new NotificationChannel(Integer.toString(NOTIFICATION_ID2), "Friend Requests", NotificationManager.IMPORTANCE_DEFAULT);
+                        if (notificationManager != null)
+                                notificationManager.createNotificationChannel(notificationChannel);
+
+                        // create a notification
 						String partnerName = obj.getName();
 						SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SteamService.this);
 						NotificationCompat.Builder builder = new NotificationCompat.Builder(SteamService.this, Integer.toString(NOTIFICATION_ID2));
@@ -638,7 +652,7 @@ public class SteamService extends Service {
 		resetAuthentication();
 	}
 
-	private boolean doSteamWebAuthentication() {
+	private void doSteamWebAuthentication() {
 		sessionID = SteamUtil.bytesToHex(CryptoHelper.GenerateRandomBlock(4));
 		final WebAPI userAuth = new WebAPI("ISteamUserAuth", null);//SteamUtil.webApiKey); // this shouldn't require an api key
 		// generate an AES session key
@@ -699,8 +713,7 @@ public class SteamService extends Service {
 				}
 			}
 		}).start();
-		return true;
-	}
+    }
 
 	private void fetchAPIKey() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SteamService.this);

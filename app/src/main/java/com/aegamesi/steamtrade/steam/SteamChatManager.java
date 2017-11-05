@@ -1,5 +1,6 @@
 package com.aegamesi.steamtrade.steam;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -90,7 +91,14 @@ public class SteamChatManager {
         if (!enableNotification)
             return;
 
+        //We need this to create a Notification Channel ID (on 1st installation), Android O.
         NotificationManager notificationManager = (NotificationManager) SteamService.singleton.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel notificationChannel = new NotificationChannel(Integer.toString(NOTIFICATION_ID), "Chat Notifications", NotificationManager.IMPORTANCE_HIGH);
+        notificationChannel.enableVibration(true);
+        notificationChannel.enableLights(true);
+        if (notificationManager != null)
+            notificationManager.createNotificationChannel(notificationChannel);
+
         if (unreadMessages.size() == 0) {
             if (notificationManager != null) {
                 notificationManager.cancel(NOTIFICATION_ID);

@@ -76,7 +76,7 @@ public class FragmentEula extends DialogFragment {
 		dialog.setView(viewEula);
 
 		TextView textEula = viewEula.findViewById(R.id.eula_text);
-		textEula.setText(Html.fromHtml(message));
+		textEula.setText(Html.fromHtml(message, Html.FROM_HTML_MODE_LEGACY));
 		textEula.setMovementMethod(new LinkMovementMethod());
 
 		setCancelable(false);

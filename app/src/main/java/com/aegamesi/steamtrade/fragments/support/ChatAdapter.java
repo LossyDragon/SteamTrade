@@ -22,7 +22,7 @@ import com.aegamesi.steamtrade.steam.SteamUtil;
 
 public class ChatAdapter extends CursorRecyclerAdapter<ChatAdapter.ViewHolder> implements OnLongClickListener {
 	private static final String compactLineFormat = "<font color=\"#%06X\"><i>[%s]</i> <b>%s</b>:</font> %s";
-	private static final String compactDateFormat = "yyyy-MM-dd HH:mm:ss a";
+	//private static final String compactDateFormat = "yyyy-MM-dd HH:mm:ss a";
 	public final boolean compact;
 	public long time_last_read = 0L;
 	public int color_default = 0;
@@ -67,8 +67,8 @@ public class ChatAdapter extends CursorRecyclerAdapter<ChatAdapter.ViewHolder> i
 
 		holder.itemView.setTag(column_message);
 		// coloring
-		int colorOffline = holder.itemView.getResources().getColor(R.color.steam_offline);
-		int colorOnline = holder.itemView.getResources().getColor(R.color.steam_online);
+		int colorOffline = holder.itemView.getResources().getColor(R.color.steam_offline, null);
+		int colorOnline = holder.itemView.getResources().getColor(R.color.steam_online, null);
 		int bgColor = (column_time < time_last_read) ? colorOffline : (!column_sent_by_us ? color_default : colorOnline);
 
 		if (compact) {
@@ -87,7 +87,7 @@ public class ChatAdapter extends CursorRecyclerAdapter<ChatAdapter.ViewHolder> i
 
 			Html.ImageGetter imageGetter = new UILImageGetter(holder.textMessage, holder.textMessage.getContext());
 			String message = SteamUtil.parseEmoticons(chatLine);
-			holder.textMessage.setText(Html.fromHtml(message, imageGetter, null));
+			holder.textMessage.setText(Html.fromHtml(message, Html.FROM_HTML_MODE_LEGACY, imageGetter, null));
 		} else {
 			// next adjust the layout
 			int bubbleDrawable;
@@ -108,7 +108,7 @@ public class ChatAdapter extends CursorRecyclerAdapter<ChatAdapter.ViewHolder> i
 			Html.ImageGetter imageGetter = new UILImageGetter(holder.textMessage, holder.textMessage.getContext());
 			column_message = TextUtils.htmlEncode(column_message); // escape html
 			String message = SteamUtil.parseEmoticons(column_message);
-			holder.textMessage.setText(Html.fromHtml(message, imageGetter, null));
+			holder.textMessage.setText(Html.fromHtml(message, Html.FROM_HTML_MODE_LEGACY, imageGetter, null));
 			//holder.textStatus.setText(DateFormat.format("h:mm a   yyyy-MM-dd", column_time));
 			if (!hideTime) {
 				holder.textStatus.setText(AndroidUtil.getChatStyleTimeAgo(holder.textStatus.getContext(), column_time, System.currentTimeMillis()));

@@ -83,12 +83,12 @@ public class SteamTwoFactor {
 		int start = hash[19] & 0x0F;
 		int fullcode = (hash[start] & 0x7f) << 24 | (hash[start + 1] & 0xff) << 16 | (hash[start + 2] & 0xff) << 8 | hash[start + 3] & 0xff;
 
-		String code = "";
+		StringBuilder code = new StringBuilder();
 		for (int i = 0; i <= 4; i++) {
-			code += TOTP_CODE_CHARS.charAt(fullcode % TOTP_CODE_CHARS.length());
+			code.append(TOTP_CODE_CHARS.charAt(fullcode % TOTP_CODE_CHARS.length()));
 			fullcode /= TOTP_CODE_CHARS.length();
 		}
-		return code;
+		return code.toString();
 	}
 
 	/**
