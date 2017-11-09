@@ -225,8 +225,6 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		//Profile loader for friend/user.
 		avatarView.setImageResource(R.drawable.default_avatar);
 		if (avatar != null && avatar.length() == 40 && !avatar.equals("0000000000000000000000000000000000000000")) {
-			//	//ImageLoader.getInstance().displayImage("http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg", avatarView);
-
 			Picasso.with(getContext())
 					.load("http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg")
 					.placeholder(R.drawable.default_avatar)
@@ -250,7 +248,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		nameView.setTextColor(color);
 		statusView.setTextColor(color);
 		avatarView.setBorderColor(color);
-
+		
 		// things to do if we are not friends
 		boolean isFriend = relationship == EFriendRelationship.Friend || relationship == EFriendRelationship.IgnoredFriend;
 		boolean isSelf = SteamService.singleton.steamClient.getSteamId().equals(id);
@@ -261,6 +259,10 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 			statusView.setText(relationship.toString());
 			addFriendButton.setEnabled(id != null);
 		}
+
+		//Fix relationship if you view yourself.
+		if (relationship == EFriendRelationship.None && isSelf )
+			statusView.setText(state.toString());
 
 		// visibility of buttons and stuff
 		addFriendButton.setVisibility((!isFriend && !isSelf && !isBlocked) ? View.VISIBLE : View.GONE);
