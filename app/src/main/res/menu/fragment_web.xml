@@ -8,22 +8,18 @@
         app:showAsAction="always"/>
     <item
         android:id="@+id/web_forward"
-        android:icon="@drawable/ic_arrow_right"
         android:title="@string/web_forward"
         app:showAsAction="never"/>
     <item
         android:id="@+id/web_refresh"
-        android:icon="@drawable/ic_refresh"
         android:title="@string/web_reload"
         app:showAsAction="never"/>
     <item
         android:id="@+id/web_community"
-        android:icon="@drawable/ic_account"
         android:title="@string/web_community"
         app:showAsAction="never"/>
     <item
         android:id="@+id/web_store"
-        android:icon="@drawable/ic_shopping"
         android:title="@string/web_store"
         app:showAsAction="never"/>
     <item

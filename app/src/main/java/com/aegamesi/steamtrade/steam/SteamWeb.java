@@ -23,16 +23,15 @@ public class SteamWeb {
 	/**
 	 * The user-agent string to use when making requests.
 	 */
-	final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
-	final static String USER_AGENT_MOBILE = "Mozilla/5.0 (Linux; U; Android 4.1.1; en-us; Google Nexus 4 - 4.1.1 - API 16 - 768x1280 Build/JRO03S) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
+	private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
+	//final static String USER_AGENT_MOBILE = "Mozilla/5.0 (Linux; U; Android 4.1.1; en-us; Google Nexus 4 - 4.1.1 - API 16 - 768x1280 Build/JRO03S) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
 
 	/**
 	 * Fetches an api key from /dev/registerkey.
 	 *
-	 * @param domain "Domain" to send to Steam.
 	 * @return The api key, or null if there was an error.
 	 */
-	public static String requestWebAPIKey(String domain) {
+	static String requestWebAPIKey() {
 		String page = fetch("https://steamcommunity.com/dev/apikey", "GET", null, "http://steamcommunity.com/dev/");
 		String key = parseWebAPIKey(page);
 		if (key != null)
@@ -40,7 +39,7 @@ public class SteamWeb {
 		// otherwise, we need to register for a key
 
 		Map<String, String> data = new HashMap<>();
-		data.put("domain", domain);
+		data.put("domain", "localhost");
 		data.put("agreeToTerms", "agreed");
 		data.put("Submit", "Register");
 		data.put("sessionid", SteamService.singleton.sessionID); // new as of 5/12/2015
@@ -85,8 +84,8 @@ public class SteamWeb {
 	 * @return The server's String response to the request.
 	 */
 	@NonNull
-	public static String request(String url, String method, Map<String, String> data,
-								 String cookies, String referrer) {
+	private static String request(String url, String method, Map<String, String> data,
+								  String cookies, String referrer) {
 
 		StringBuilder out = new StringBuilder();
 		try {

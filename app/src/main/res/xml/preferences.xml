@@ -8,6 +8,12 @@
         android:summary="@string/pref_reconnect_summ"
         android:title="@string/pref_reconnect"/>
 
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="pref_force_reconnect"
+        android:summary="@string/pref_force_reconnect_summ"
+        android:title="@string/pref_force_reconnect"/>
+
     <PreferenceScreen
         android:title="@string/pref_notification">
 

@@ -10,7 +10,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -63,8 +62,6 @@ import uk.co.thomasc.steamkit.base.generated.steamlanguage.EUniverse;
 import static android.text.InputType.TYPE_CLASS_TEXT;
 import static android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
 
-
-//TODO: Check MainActivity for TODO's (ProgressDialog)
 public class LoginActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_LOAD_MAFILE = 48399;
     // Values for email and password at the time of the login attempt.
@@ -76,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText textUsername;
     private EditText textPassword;
     private EditText textSteamguard;
+    private Button buttonSignIn;
     private View headerSaved;
     private View headerNew;
     private View viewSaved;
@@ -139,7 +137,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         // prepare login form
-        rememberInfoCheckbox = findViewById(R.id.remember);
+        rememberInfoCheckbox = (findViewById(R.id.remember));
         textSteamguard = findViewById(R.id.steamguard);
         textSteamguard.setVisibility(View.GONE);
         textUsername = findViewById(R.id.username);
@@ -163,7 +161,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
-        Button buttonSignIn = findViewById(R.id.sign_in_button);
+        buttonSignIn = findViewById(R.id.sign_in_button);
         buttonSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -186,9 +184,7 @@ public class LoginActivity extends AppCompatActivity {
             if (resultCode == Activity.RESULT_OK) {
                 try {
                     StringBuilder b = new StringBuilder();
-                    @SuppressWarnings("ConstantConditions")
                     InputStream is = getContentResolver().openInputStream(data.getData());
-                    @SuppressWarnings("ConstantConditions")
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                     String s;
                     while ((s = reader.readLine()) != null) {
@@ -203,8 +199,7 @@ public class LoginActivity extends AppCompatActivity {
                         existing_acc.importFromJson(b.toString());
                         existing_acc.has_authenticator = true;
                         AccountLoginInfo.writeAccount(LoginActivity.this, existing_acc);
-                        //Toast.makeText(LoginActivity.this, R.string.action_successful, Toast.LENGTH_LONG).show();
-                        Snackbar.make(findViewById(R.id.login_layout), R.string.action_successful, Snackbar.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, R.string.action_successful, Toast.LENGTH_LONG).show();
                     } else {
                         acc.username = acc.tfa_accountName;
                         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -220,8 +215,7 @@ public class LoginActivity extends AppCompatActivity {
                                 acc.password = passwordInput.getText().toString();
                                 acc.has_authenticator = true;
                                 AccountLoginInfo.writeAccount(LoginActivity.this, acc);
-                                //Toast.makeText(LoginActivity.this, R.string.action_successful, Toast.LENGTH_LONG).show();
-                                Snackbar.make(findViewById(R.id.login_layout), R.string.action_successful, Snackbar.LENGTH_LONG).show();
+                                Toast.makeText(LoginActivity.this, R.string.action_successful, Toast.LENGTH_LONG).show();
                                 recreate();
                             }
                         });
@@ -261,7 +255,6 @@ public class LoginActivity extends AppCompatActivity {
     private void handleLegacy() {
         // from version 0.10.4 onwards:
         // convert from old account storage to new account storage
-
         Set<String> savedAccounts = new HashSet<>();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
         Map<String, ?> allPrefs = sharedPreferences.getAll();
@@ -278,7 +271,6 @@ public class LoginActivity extends AppCompatActivity {
             loginInfo.password = sharedPreferences.getString("password_" + savedAccount, null);
             loginInfo.loginkey = sharedPreferences.getString("loginkey_" + savedAccount, null);
             loginInfo.avatar = sharedPreferences.getString("avatar_" + savedAccount, null);
-
             AccountLoginInfo.writeAccount(this, loginInfo);
             editor.remove("loginkey_" + savedAccount);
             editor.remove("password_" + savedAccount);
@@ -304,16 +296,15 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void attemptLogin() {
-        //TODO: do not do this if we're already trying to connect-- fix this
-        if (progressDialog  != null)
+        // TODO do not do this if we're already trying to connect-- fix this
+        if (progressDialog != null)
             return;
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        @SuppressWarnings("ConstantConditions")
+        assert cm != null;
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork == null || !activeNetwork.isConnected())
-            //Toast.makeText(this, R.string.not_connected_to_internet, Toast.LENGTH_LONG).show();
-            Snackbar.make(findViewById(R.id.login_layout), R.string.not_connected_to_internet, Snackbar.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.not_connected_to_internet, Toast.LENGTH_LONG).show();
 
         textUsername.setError(null);
         textPassword.setError(null);
@@ -347,9 +338,8 @@ public class LoginActivity extends AppCompatActivity {
             focusView.requestFocus();
         } else {
             // log in
-
-            if (progressDialog  != null)
-                progressDialog .dismiss();
+            if (progressDialog != null)
+                progressDialog.dismiss();
 
             // start the logging in progess
             Bundle bundle = new Bundle();
@@ -388,10 +378,10 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        //Show any potential warnings.
+        // show any potential warnings...
         int show_warning = -1;
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        @SuppressWarnings("ConstantConditions")
+        assert cm != null;
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork == null || !activeNetwork.isConnected()) {
             show_warning = R.string.not_connected_to_internet;
@@ -405,7 +395,7 @@ public class LoginActivity extends AppCompatActivity {
             textLoginWarning.setVisibility(View.GONE);
         }
 
-        //Set self as the steam connection listener
+        // set self as the steam connection listener
         SteamService.connectionListener = connectionListener;
     }
 
@@ -438,6 +428,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onConnectionResult(final EResult result) {
             Log.i("ConnectionListener", "Connection result: " + result);
+            final boolean pref_force_connect = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("pref_force_reconnect", true);
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -445,9 +436,9 @@ public class LoginActivity extends AppCompatActivity {
                     if (!active)
                         return;
 
-                    if (progressDialog  != null && progressDialog .isShowing())
-                        progressDialog .dismiss();
-                    progressDialog  = null;
+                    if (progressDialog != null && progressDialog.isShowing())
+                        progressDialog.dismiss();
+                    progressDialog = null;
 
                     if (!handle_result)
                         return;
@@ -456,7 +447,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (result == EResult.InvalidPassword) {
                         // maybe change error to "login key expired, log in again" if using loginkey
                         if (SteamService.extras != null && SteamService.extras.getString("loginkey") != null) {
-                            Snackbar.make(findViewById(R.id.login_layout), R.string.error_loginkey_expired, Snackbar.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this, R.string.error_loginkey_expired, Toast.LENGTH_LONG).show();
                             textPassword.setError(getString(R.string.error_loginkey_expired));
 
                             String username = SteamService.extras.getString("username");
@@ -466,21 +457,29 @@ public class LoginActivity extends AppCompatActivity {
                             textPassword.requestFocus();
                         }
                     } else if (result == EResult.ConnectFailed) {
-                        Snackbar.make(findViewById(R.id.login_layout), R.string.cannot_connect_to_steam, Snackbar.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, R.string.cannot_connect_to_steam, Toast.LENGTH_SHORT).show();
                     } else if (result == EResult.ServiceUnavailable) {
-                        Snackbar.make(findViewById(R.id.login_layout), R.string.cannot_auth_with_steamweb, Snackbar.LENGTH_LONG).show();
-                    } else if (result == EResult.AccountLogonDenied || result == EResult.AccountLogonDeniedNoMail ||
-                            result == EResult.AccountLogonDeniedVerifiedEmailRequired || result == EResult.AccountLoginDeniedNeedTwoFactor) {
+                        Toast.makeText(LoginActivity.this, R.string.cannot_auth_with_steamweb, Toast.LENGTH_LONG).show();
+                    } else if (result == EResult.AccountLogonDenied || result == EResult.AccountLogonDeniedNoMail || result == EResult.AccountLogonDeniedVerifiedEmailRequired || result == EResult.AccountLoginDeniedNeedTwoFactor) {
                         textSteamguard.setVisibility(View.VISIBLE);
                         textSteamguard.setError(getString(R.string.error_steamguard_required));
                         textSteamguard.requestFocus();
+
+                        if(!pref_force_connect) //Don't Toast clash if 'pref_force_connect' is true.
                         Toast.makeText(LoginActivity.this, "SteamGuard: " + result.name(), Toast.LENGTH_LONG).show();
-                        Snackbar.make(findViewById(R.id.login_layout), R.string.error_disconnected, Snackbar.LENGTH_LONG).show();
 
                         String username = SteamService.extras.getString("username");
                         showAndFillManualLogin(username);
 
                         need_twofactor = result == EResult.AccountLoginDeniedNeedTwoFactor;
+
+                        //Setting for Force Log in.
+                        //if (pref_force_connect){
+                        //    Toast.makeText(LoginActivity.this, "Please wait! Logging in...", Toast.LENGTH_LONG).show();
+                        //    android.os.SystemClock.sleep(2500); //Steam servers are slow.
+                        //    buttonSignIn.performClick(); //Might work, calling attemptLogin() doesn't push to main activity.
+                        //}
+
                     } else if (result == EResult.InvalidLoginAuthCode || result == EResult.TwoFactorCodeMismatch) {
                         textSteamguard.setVisibility(View.VISIBLE);
                         textSteamguard.setError(getString(R.string.error_incorrect_steamguard));
@@ -490,16 +489,18 @@ public class LoginActivity extends AppCompatActivity {
                         showAndFillManualLogin(username);
 
                         need_twofactor = result == EResult.TwoFactorCodeMismatch;
+
                     } else if (result != EResult.OK) {
                         // who knows what this is. perhaps a bug report will reveal
-                        Snackbar.make(findViewById(R.id.login_layout), "Cannot Login: " + result.toString(), Snackbar.LENGTH_LONG).show();
+                        Toast.makeText(LoginActivity.this, "Cannot Login: " + result.toString(), Toast.LENGTH_LONG).show();
                     } else {
                         if (SteamUtil.webApiKey.length() == 0) {
-                            Snackbar.make(findViewById(R.id.login_layout), R.string.error_getting_key, Snackbar.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this, R.string.error_getting_key, Toast.LENGTH_LONG).show();
                         }
 
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("isLoggingIn", true);
+                        Log.d ("Login Finish", "Heading to main Activity");
                         LoginActivity.this.startActivity(intent);
                         finish();
                     }
@@ -541,10 +542,10 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.AccountViewHolder> {
-        private List<AccountLoginInfo> accounts = new ArrayList<>();
+    private class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.AccountViewHolder> {
+        List<AccountLoginInfo> accounts = new ArrayList<>();
 
-        private AccountListAdapter() {
+        AccountListAdapter() {
             accounts = AccountLoginInfo.getAccountList(LoginActivity.this);
             notifyDataSetChanged();
         }
@@ -563,13 +564,11 @@ public class LoginActivity extends AppCompatActivity {
             holder.avatar.setImageResource(R.drawable.default_avatar);
 
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+            String avatar = sharedPreferences.getString("avatar_" + account.username, "");
 
-            String isEmpty = sharedPreferences.getString("avatar_" + account.username, "");
-
-            if (isEmpty != "") {
-                Log.d("Picasso Login loader", "loaded, isEmpty:" + isEmpty + " -End");
+            if (!avatar.equals("")) {
                 Picasso.with(getApplicationContext())
-                        .load(isEmpty)
+                        .load(avatar)
                         .into(holder.avatar);
             }
 
@@ -584,12 +583,12 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         class AccountViewHolder extends ViewHolder implements OnClickListener {
-            private CircleImageView avatar;
+            CircleImageView avatar;
             public TextView name;
-            private ImageButton buttonRemove;
-            private ImageButton buttonKey;
+            ImageButton buttonRemove;
+            ImageButton buttonKey;
 
-            private AccountViewHolder(ViewGroup parent) {
+            AccountViewHolder(ViewGroup parent) {
                 super(LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_login_account, parent, false));
 
                 name = itemView.findViewById(R.id.account_name);
@@ -632,15 +631,6 @@ public class LoginActivity extends AppCompatActivity {
                     builder.setCancelable(true);
                     builder.setView(codeView);
                     builder.show();
-
-                    builder.setNegativeButton("cancel", new DialogInterface.OnClickListener(){
-                        @Override
-                        public void onClick(DialogInterface d, int arg1) {
-                            d.cancel();
-                            Log.d ("Test", "Cancelled");
-                        }
-                    });
-
                 }
             }
         }

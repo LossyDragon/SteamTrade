@@ -4,11 +4,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="?android:attr/selectableItemBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
     android:orientation="horizontal"
-    >
+    android:clickable="false">
+
     <LinearLayout
         android:id="@+id/friend_profiler"
         android:layout_width="0dip"
@@ -31,14 +32,13 @@
 
         <LinearLayout
             android:id="@+id/friend_bg"
-            android:layout_width="0dip"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
             android:gravity="center_vertical"
             android:orientation="vertical"
             android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:layout_weight="1">
+            android:paddingRight="8dp">
 
             <TextView
                 android:id="@+id/friend_name"

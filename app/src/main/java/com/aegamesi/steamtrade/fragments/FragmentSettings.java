@@ -16,6 +16,7 @@ import com.aegamesi.steamtrade.steam.SteamUtil;
 import com.github.machinarius.preferencefragment.PreferenceFragment;
 
 public class FragmentSettings extends PreferenceFragment {
+
     private RingtonePreference pref_notification_sound = null;
 
     @Override

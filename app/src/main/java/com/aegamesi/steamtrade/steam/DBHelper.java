@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
 
 public class DBHelper extends SQLiteOpenHelper {
 	// If you change the database schema, you must increment the database version.
-	public static final int DATABASE_VERSION = 1;
-	public static final String DATABASE_NAME = "SteamTrade.db";
+	private static final int DATABASE_VERSION = 1;
+	private static final String DATABASE_NAME = "SteamTrade.db";
 
 	// predefined sql query
 	private static final String SQL_CREATE_ENTRIES =
@@ -36,7 +36,7 @@ public class DBHelper extends SQLiteOpenHelper {
 					ChatEntry.COLUMN_MESSAGE + " TEXT" +
 					")";
 
-	public DBHelper(Context context) {
+	DBHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
@@ -110,7 +110,7 @@ public class DBHelper extends SQLiteOpenHelper {
 		public static final String COLUMN_MESSAGE = "message";
 
 		// inserts a new row, returns the new row id
-		public static long insert(SQLiteDatabase db, long time, long id_us, long id_them, boolean sent_by_us, int type, String message) {
+		static void insert(SQLiteDatabase db, long time, long id_us, long id_them, boolean sent_by_us, int type, String message) {
 			ContentValues values = new ContentValues();
 			values.put(COLUMN_TIME, time);
 			values.put(COLUMN_OUR_ID, id_us);
@@ -119,7 +119,7 @@ public class DBHelper extends SQLiteOpenHelper {
 			values.put(COLUMN_TYPE, type);
 			values.put(COLUMN_MESSAGE, message.trim());
 
-			return db.insert(TABLE, null, values);
+			db.insert(TABLE, null, values);
 		}
 	}
 }

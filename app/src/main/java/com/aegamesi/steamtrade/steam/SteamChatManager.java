@@ -36,7 +36,6 @@ public class SteamChatManager {
     public static int CHAT_TYPE_CHAT = 0;
     @SuppressWarnings("WeakerAccess")
     public static int CHAT_TYPE_TRADE = 1;
-
     private static final int NOTIFICATION_ID = 49717;
 
     public Set<SteamID> unreadMessages;
@@ -96,6 +95,7 @@ public class SteamChatManager {
         NotificationChannel notificationChannel = new NotificationChannel(Integer.toString(NOTIFICATION_ID), "Chat Notifications", NotificationManager.IMPORTANCE_HIGH);
         notificationChannel.enableVibration(true);
         notificationChannel.enableLights(true);
+
         if (notificationManager != null)
             notificationManager.createNotificationChannel(notificationChannel);
 
@@ -160,6 +160,8 @@ public class SteamChatManager {
             String lastLine = recentMessages.get(entry.convertToLong());
             builder.setContentTitle(friendName);
             builder.setContentText(lastLine);
+
+
         } else {
             // more than one person
             Iterator<SteamID> i = unreadMessages.iterator();
@@ -195,6 +197,7 @@ public class SteamChatManager {
         stackBuilder.addNextIntent(intent);
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(resultPendingIntent);
+
         if (notificationManager != null) {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
         }

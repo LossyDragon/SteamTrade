@@ -733,7 +733,7 @@ public class SteamService extends Service {
 			Log.d("Steam", "Using saved api key: " + SteamUtil.webApiKey);
 		} else {
 			// fetch api key
-			apikey = SteamWeb.requestWebAPIKey("localhost"); // hopefully this keeps working
+			apikey = SteamWeb.requestWebAPIKey(); // hopefully this keeps working
 			SteamUtil.webApiKey = apikey == null ? "" : apikey;
 			Log.d("Steam", "Fetched api key: " + SteamUtil.webApiKey);
 

@@ -64,11 +64,11 @@ import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback;
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT;
 
 //TODO: Interactive Notifications?
-//TODO: fromHtml deprecated
 //TODO: oops, broke emojies (Preening old libraries)
+//TODO: UI redesign?
 
 public class MainActivity extends AppCompatActivity implements SteamMessageHandler, OnNavigationItemSelectedListener {
-	public /*static*/ MainActivity instance = null;
+	public MainActivity instance = null;
 	public boolean isActive = false;
 
 	public SteamFriends steamFriends;
@@ -166,11 +166,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		if (getIntent() != null && ((getIntent().getAction() != null && getIntent().getAction().equals(Intent.ACTION_VIEW)) || getIntent().getStringExtra("url") != null)) {
 			String url;
 			url = getIntent().getStringExtra("url");
-			if (url == null) {
+			if (url == null)
 				url = getIntent().getData().toString();
-			}/* else {
-				url = url.substring(url.indexOf("steamcommunity.com") + ("steamcommunity.com".length()));
-			}*/
+
 			Log.d("Ice", "Received url: " + url);
 
 			if (url.contains("steamcommunity.com/linkfilter/?url=")) {
@@ -195,8 +193,6 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
-		// Sync the toggle state after onRestoreInstanceState has occurred.
-		//drawerToggle.syncState();
 	}
 
 	@Override
@@ -226,8 +222,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		FragmentTransaction transaction = fragmentManager.beginTransaction();
 		if (addToBackStack)
 			transaction.addToBackStack(null);
-		//else
-		//	fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);*/
+
 		transaction.replace(R.id.content_frame, fragment, fragment.getClass().getName()).commit();
 		drawerLayout.closeDrawer(GravityCompat.START);
 	}
@@ -246,13 +241,16 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		drawerNotifyText.setText(String.format(Locale.US, "%1$d", notifications));
 		drawerNotifyCard.setCardBackgroundColor(ContextCompat.getColor(this, notifications == 0 ? R.color.notification_off : R.color.notification_on));
 
+		//Log.d ("avatar equals", avatar);
+
 		if (!avatar.equals("0000000000000000000000000000000000000000")) {
 			String avatarURL = "http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg";
+
+			Log.d("AvatarURL", avatarURL);
 
 			//Drawer Profile picture.
 			Picasso.with(this)
 					.load(avatarURL)
-					.placeholder(R.drawable.default_avatar)
 					.into(drawerAvatar);
 
 			if (SteamService.extras != null && SteamService.extras.containsKey("username")) {
@@ -267,12 +265,10 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		msg.handle(DisconnectedCallback.class, new ActionT<DisconnectedCallback>() {
 			@Override
 			public void call(DisconnectedCallback obj) {
-				// go back to the login screen
-				// only if currently active
+				// go back to the login screen, only if currently active.
 				if (isActive) {
 					Intent intent = new Intent(MainActivity.this, LoginActivity.class);
 					MainActivity.this.startActivity(intent);
-					//Toast.makeText(MainActivity.this, R.string.error_disconnected, Toast.LENGTH_LONG).show();
 					Snackbar.make(findViewById(R.id.main), R.string.error_disconnected, Snackbar.LENGTH_LONG).show();
 					finish();
 				}
@@ -292,12 +288,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			@Override
 			public void call(FriendAddedCallback obj) {
 				if (obj.getResult() != EResult.OK) {
-					//Toast.makeText(MainActivity.this, String.format(getString(R.string.friend_add_fail), obj.getResult().toString()), Toast.LENGTH_LONG).show();
 					Snackbar.make(findViewById(R.id.main), String.format(getString(R.string.friend_add_fail), obj.getResult().toString()), Snackbar.LENGTH_LONG).show();
 				} else {
-					//Toast.makeText(MainActivity.this, getString(R.string.friend_add_success), Toast.LENGTH_LONG).show();
 					Snackbar.make(findViewById(R.id.main), getString(R.string.friend_add_success), Snackbar.LENGTH_LONG).show();
-
 				}
 			}
 		});
@@ -307,7 +300,6 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 				updateDrawerProfile();
 			}
 		});
-
 
 		// Now, we find the fragments and pass the message on that way
 		FragmentManager fragmentManager = getSupportFragmentManager();
@@ -396,7 +388,6 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 				if (SteamService.singleton != null) {
 					SteamService.singleton.disconnect();
 				}
-
 				return null;
 			}
 

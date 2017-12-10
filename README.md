@@ -9,7 +9,7 @@ Changes/Adjusts made in this fork:
 - (In progress) Replace depreacted functions with modern API replacements. 
 - Updated/Fixed IDE warnings and removed unnecessary code.
 - Fixed Notifications for android O.  
-- Replaced UIL with Picasso (Broke chat Emojies for the moment)
+- Replaced UIL with Picassa (Broke chat Emojies for the moment)
 - UI adjustments and better persona icon loading. 
 - Fixed Chat recyclerView removing itself when youtube PiP is focused. 
 - Removed Tabview (Wasted space). 

@@ -19,7 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.lib.android.UILImageGetter;
+import com.aegamesi.steamtrade.lib.android.PicassoImageGetter;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
 import com.aegamesi.steamtrade.steam.SteamWeb;
@@ -208,7 +208,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		if (profile_info != null) {
 			String summary_raw = profile_info.getSummary();
 			String summary = SteamUtil.parseBBCode(summary_raw);
-			Html.ImageGetter imageGetter = new UILImageGetter(summaryView, summaryView.getContext());
+			Html.ImageGetter imageGetter = new PicassoImageGetter(summaryView, summaryView.getContext());
 			summaryView.setText(Html.fromHtml(summary, Html.FROM_HTML_MODE_LEGACY, imageGetter, null));
 			summaryView.setMovementMethod(new LinkMovementMethod());
 		}
@@ -223,12 +223,10 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		nameView.setText(name);
 
 		//Profile loader for friend/user.
-		avatarView.setImageResource(R.drawable.default_avatar);
+		//avatarView.setImageResource(R.drawable.default_avatar);
 		if (avatar != null && avatar.length() == 40 && !avatar.equals("0000000000000000000000000000000000000000")) {
 			Picasso.with(getContext())
 					.load("http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg")
-					.placeholder(R.drawable.default_avatar)
-					.error(R.drawable.default_avatar)
 					.into(avatarView);
 		}
 
@@ -248,7 +246,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		nameView.setTextColor(color);
 		statusView.setTextColor(color);
 		avatarView.setBorderColor(color);
-		
+
 		// things to do if we are not friends
 		boolean isFriend = relationship == EFriendRelationship.Friend || relationship == EFriendRelationship.IgnoredFriend;
 		boolean isSelf = SteamService.singleton.steamClient.getSteamId().equals(id);

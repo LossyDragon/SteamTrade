@@ -307,4 +307,7 @@
     <string name="eula">TODO eula</string>
     <string name="action_settings">Settings</string>
     <string name="friend_profile_page">View %1$s\'s Profile</string>
+
+    <string name="pref_force_reconnect">Force Connect</string>
+    <string name="pref_force_reconnect_summ">Force connect if steam guard appears during login</string>
 </resources>

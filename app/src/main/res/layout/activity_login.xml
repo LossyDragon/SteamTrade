@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".LoginActivity">
 
-    <android.support.design.widget.CoordinatorLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -89,24 +89,6 @@
                         android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
                         android:visibility="visible"/>
 
-
-                    <LinearLayout
-                        android:id="@+id/loading_spinner"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="4dp"
-                        android:orientation="vertical"
-                        android:visibility="gone">
-
-                        <ProgressBar
-                            android:id="@+id/progressbar"
-                            style="?android:attr/progressBarStyle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"/>
-
-                    </LinearLayout>
-
                     <LinearLayout
                         android:id="@+id/layout_saved"
                         android:layout_width="match_parent"
@@ -136,7 +118,6 @@
                     card_view:cardCornerRadius="4dp"
                     card_view:cardElevation="4dp"
                     card_view:cardUseCompatPadding="true">
-
 
                     <TextView
                         android:id="@+id/header_new"
@@ -172,7 +153,8 @@
                             android:inputType="textEmailAddress|textNoSuggestions"
                             android:maxLines="1"
                             android:singleLine="true"
-                            android:importantForAutofill="no"/>
+                            android:importantForAutofill="no">
+                        </EditText>
 
                         <EditText
                             android:id="@+id/password"
@@ -189,8 +171,8 @@
                             android:inputType="textPassword"
                             android:maxLines="1"
                             android:singleLine="true"
-                            tools:ignore="InvalidImeActionId"
-                            android:importantForAutofill="no"/>
+                            android:importantForAutofill="no"
+                            tools:ignore="InvalidImeActionId" />
 
                         <EditText
                             android:id="@+id/steamguard"
@@ -206,9 +188,8 @@
                             android:inputType="textCapCharacters|textNoSuggestions"
                             android:maxLines="1"
                             android:singleLine="true"
-                            tools:ignore="InvalidImeActionId"
-                            android:importantForAutofill="no"/>
-
+                            android:importantForAutofill="no"
+                            tools:ignore="InvalidImeActionId" />
 
                         <View
                             android:layout_width="match_parent"
@@ -232,7 +213,8 @@
                             android:layout_height="wrap_content"
                             android:paddingLeft="32dp"
                             android:paddingRight="32dp"
-                            android:text="@string/action_sign_in"/>
+                            android:text="@string/action_sign_in"
+                            />
                     </LinearLayout>
                 </android.support.v7.widget.CardView>
             </LinearLayout>
@@ -265,11 +247,11 @@
                 android:id="@+id/button_overflow"
                 style="@style/MaterialStyleImageButton"
                 android:layout_width="32dp"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
                 android:text="@string/btn_3dots"
                 android:textSize="35sp"/>
         </RelativeLayout>
-    </android.support.design.widget.CoordinatorLayout>
+    </ScrollView>
 </merge>

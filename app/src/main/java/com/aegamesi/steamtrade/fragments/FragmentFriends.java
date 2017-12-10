@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,7 +40,6 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 	public long recentChatThreshold = 2 * 24 * 60 * 60 * 1000; // 2 days
 	public FriendsListAdapter adapter;
 	public RecyclerView recyclerView;
-	public RelativeLayout friendProfile;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -102,7 +100,7 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 		recyclerView.setHasFixedSize(true);
 		recyclerView.setLayoutManager(new LinearLayoutManager(activity()));
 
-		boolean hideBlockedUsers = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_hide_blocked_users", false);
+		boolean hideBlockedUsers = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_hide_blocked_users", true);
 		adapter = new FriendsListAdapter(this, null, true, hideBlockedUsers);
 		recyclerView.setAdapter(adapter);
 
@@ -187,7 +185,7 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 		}
 
 		//TODO: Seperate R.id.friends_list_item and R.id.friend_chat_button. OVERLAP.
-		if (v.getId() == R.id.friends_list_item) {
+		if (v.getId() == R.id.friend_profiler) {
 			SteamID id = (SteamID) v.getTag();
 			Fragment fragment = new FragmentProfile();
 			Bundle bundle = new Bundle();

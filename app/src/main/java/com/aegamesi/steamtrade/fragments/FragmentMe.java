@@ -39,7 +39,6 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 	public Spinner statusSpinner;
 	public Button viewProfileButton;
 	public Button changeNameButton;
-	public Button changeGameButton;
 	public Button buttonTwoFactor;
 	public TextView notifyComments;
 	public TextView notifyChat;
@@ -73,7 +72,6 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		statusSpinner = view.findViewById(R.id.profile_status_spinner);
 		viewProfileButton = view.findViewById(R.id.me_view_profile);
 		changeNameButton = view.findViewById(R.id.me_set_name);
-		changeGameButton = view.findViewById(R.id.me_set_game);
 		buttonTwoFactor = view.findViewById(R.id.me_two_factor);
         notifyChat = view.findViewById(R.id.me_notify_chat);
 		notifyComments = view.findViewById(R.id.me_notify_comments);
@@ -85,7 +83,6 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		statusSpinner.setAdapter(adapter);
 		statusSpinner.setOnItemSelectedListener(this);
 		changeNameButton.setOnClickListener(this);
-		changeGameButton.setOnClickListener(this);
 		viewProfileButton.setOnClickListener(this);
 		buttonTwoFactor.setOnClickListener(this);
 		updateView();
@@ -108,14 +105,12 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		statusSpinner.setSelection(stateToIndex(state));
 
 		//FragmentMe profile icon.
-		if (!avatar.equals("null"))
+		if (!avatar.equals("null") || !avatar.contains(""))
 		{
 			Picasso.with(getContext())
 					.load(avatar)
-					.placeholder(R.drawable.default_avatar)
 					.into(avatarView);
 		}
-
 
 		nameView.setTextColor(ContextCompat.getColor(getContext(), R.color.steam_online));
 
@@ -179,8 +174,7 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 				}
 			});
 			alert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-				}
+				public void onClick(DialogInterface dialog, int whichButton) {}
 			});
 			alert.show();
 		}

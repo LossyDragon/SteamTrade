@@ -27,6 +27,7 @@ public class IceBroadcastReceiver extends BroadcastReceiver {
 
 				// we are not connected. Reconnect.
 				ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+				assert cm != null;
 				NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
 				boolean connected = activeNetwork != null && activeNetwork.isConnected();

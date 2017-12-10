@@ -88,8 +88,8 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 
 	@Override //Updated Search function.
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.fragment_library, menu);
 		inflater.inflate(R.menu.search, menu);
+		inflater.inflate(R.menu.fragment_library, menu);
 
 		MenuItem search = menu.findItem(R.id.action_search);
 		SearchView searchView = (SearchView) search.getActionView();
