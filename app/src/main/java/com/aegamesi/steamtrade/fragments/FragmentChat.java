@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -40,6 +41,7 @@ import uk.co.thomasc.steamkit.types.steamid.SteamID;
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT;
 
 public class FragmentChat extends FragmentBase implements ChatReceiver {
+    private static final String TAG = "SteamTrade:FragmentChat";
     public SteamID ourID;
     public SteamID chatID;
     public ChatAdapter adapter;
@@ -102,10 +104,14 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
         // set up the cursor
         adapter.changeCursor(cursor = fetchCursor());
 
-        activity().getPreferences(Context.MODE_PRIVATE).edit().putLong("chat_read_" + ourID.convertToLong() + "_" + chatID.convertToLong(), System.currentTimeMillis()).apply();
+        activity().getPreferences(Context.MODE_PRIVATE).edit()
+                .putLong("chat_read_" + ourID.convertToLong() + "_" + chatID.convertToLong(), System.currentTimeMillis()).apply();
 
         if (SteamService.singleton != null && SteamService.singleton.chatManager != null && SteamService.singleton.chatManager.receivers != null)
             SteamService.singleton.chatManager.receivers.add(0, this);
+
+        //On resume, scroll to bottom.
+        chatList.scrollToPosition(cursor.getCount() - 1);
     }
 
     @Override
@@ -117,7 +123,7 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 
                 if (type == EChatEntryType.Typing && callback.getSender().equals(chatID)) {
                     // set a timer for the thing
-                    Log.d("SteamKit", "User is typing a message...");
+                    Log.d(TAG, activity().steamFriends.getFriendPersonaName(chatID) + " is typing a message...");
                     if (chat_typing != null)
                         chat_typing.setVisibility(View.VISIBLE);
                     if (typingHandler != null) {
@@ -148,7 +154,7 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         inflater = activity().getLayoutInflater();
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
 
@@ -220,12 +226,12 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
     }
 
 
-    //TODO: onPause or onDestroy is naughty. blanks chat when youtube PiP is focused (android M+)
+    //TODO: no null changeCursor should stop RecyclerView from dissappearing on YT PiP focus
     @Override
     public void onPause() {
         super.onPause();
 
-        adapter.changeCursor(null);
+        //adapter.changeCursor(null);
 
         if (SteamService.singleton != null && SteamService.singleton.chatManager != null && SteamService.singleton.chatManager.receivers != null)
             SteamService.singleton.chatManager.receivers.remove(this);
