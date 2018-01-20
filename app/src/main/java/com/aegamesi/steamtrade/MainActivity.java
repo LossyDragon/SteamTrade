@@ -49,6 +49,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
 
+import cat.ereza.customactivityoncrash.config.CaocConfig;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends;
@@ -63,8 +64,8 @@ import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg;
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback;
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT;
 
+
 //TODO: Interactive Notifications?
-//TODO: oops, broke emojies (Preening old libraries)
 //TODO: UI redesign?
 
 public class MainActivity extends AppCompatActivity implements SteamMessageHandler, OnNavigationItemSelectedListener {
@@ -88,6 +89,15 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		CaocConfig.Builder.create()
+				.backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT) //default: CaocConfig.BACKGROUND_MODE_SHOW_CUSTOM
+				.enabled(true) //default: true
+				.showErrorDetails(true) //default: true
+				.showRestartButton(true) //default: true
+				.logErrorOnRestart(true) //default: true
+				.trackActivities(true) //default: false
+				.apply();
 
 		if (!assertSteamConnection())
 			return;
@@ -241,12 +251,8 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		drawerNotifyText.setText(String.format(Locale.US, "%1$d", notifications));
 		drawerNotifyCard.setCardBackgroundColor(ContextCompat.getColor(this, notifications == 0 ? R.color.notification_off : R.color.notification_on));
 
-		//Log.d ("avatar equals", avatar);
-
 		if (!avatar.equals("0000000000000000000000000000000000000000")) {
 			String avatarURL = "http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg";
-
-			Log.d("AvatarURL", avatarURL);
 
 			//Drawer Profile picture.
 			Picasso.with(this)
