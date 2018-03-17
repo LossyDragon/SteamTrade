@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout android:id="@+id/chat_main"
+    <LinearLayout
+        android:id="@+id/chat_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -12,9 +13,9 @@
 
         <View
             android:layout_width="fill_parent"
-            android:layout_height="1dp"
+            android:layout_height="2dp"
             android:layout_margin="1dip"
-            android:background="@android:color/darker_gray"/>
+            android:background="@android:color/darker_gray" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/chat"
@@ -22,8 +23,9 @@
             android:layout_height="0dip"
             android:layout_weight="1"
             android:paddingBottom="2dp"
-            android:scrollbars="vertical">
-        </android.support.v7.widget.RecyclerView>
+            android:scrollbars="vertical"
+            tools:itemCount="8"
+            tools:listitem="@layout/fragment_chat_item" />
 
         <TextView
             android:id="@+id/chat_typing"
@@ -34,7 +36,7 @@
             android:text="@string/friend_is_typing"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:textStyle="italic"
-            android:visibility="visible"/>
+            android:visibility="visible" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -50,8 +52,7 @@
                 android:ems="10"
                 android:hint="@string/chat_hint"
                 android:imeOptions="actionSend"
-                android:inputType="text|textMultiLine|textCapSentences|textAutoCorrect"
-                />
+                android:inputType="text|textMultiLine|textCapSentences|textAutoCorrect" />
 
             <ImageButton
                 android:id="@+id/chat_button"
@@ -61,8 +62,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:contentDescription="@string/send_button"
                 android:padding="6dp"
-                android:src="@drawable/ic_menu_send"
-                />
+                android:src="@drawable/ic_menu_send" />
 
         </LinearLayout>
     </LinearLayout>

@@ -1,4 +1,4 @@
-package com.aegamesi.steamtrade.fragments.support;
+package com.aegamesi.steamtrade.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -8,8 +8,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.lib.android.AndroidUtil;
 import com.aegamesi.steamtrade.steam.SteamTwoFactor;
 
 public class SteamGuardCodeView extends LinearLayout {
@@ -20,9 +20,9 @@ public class SteamGuardCodeView extends LinearLayout {
 
 	public SteamGuardCodeView(Context context) {
 		super(context);
+		init();
+	}
 
-	init();
-}
 	public SteamGuardCodeView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
@@ -65,7 +65,6 @@ public class SteamGuardCodeView extends LinearLayout {
 		textCode.setOnLongClickListener(new OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View view) {
-				// view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
 				AndroidUtil.copyToClipboard(view.getContext(), textCode.getText().toString());
 				Toast.makeText(view.getContext(), R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show();
 				return true;

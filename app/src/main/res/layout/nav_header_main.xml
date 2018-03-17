@@ -1,79 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:gravity="bottom"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="48dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark"
+    android:id="@+id/drawer_profile"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/nav_header_height"
+    android:background="?attr/colorPrimary">
 
-    android:background="@color/background">
 
-    <RelativeLayout
-        android:id="@+id/drawer_profile"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/drawer_avatar"
+        android:layout_width="80dip"
+        android:layout_height="80dip"
+        android:src="@drawable/default_avatar"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/drawer_name"
+        app:civ_border_color="@color/steam_online"
+        app:civ_border_width="2dip" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/drawer_avatar"
-            android:layout_width="80dip"
-            android:layout_height="80dip"
-            android:src="@drawable/default_avatar"
-            app:civ_border_color="@color/steam_online"
-            app:civ_border_width="2dip" />
+    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/notify_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        card_view:cardBackgroundColor="@color/notification_off"
+        card_view:cardCornerRadius="4dp"
+        card_view:cardElevation="8dp"
+        card_view:contentPadding="4dp"
+        >
 
-        <android.support.v7.widget.CardView
-            android:id="@+id/notify_card"
-            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        <TextView
+            android:id="@+id/notify_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            card_view:cardBackgroundColor="@color/notification_off"
-            card_view:cardCornerRadius="4dp"
-            card_view:cardElevation="8dp"
-            card_view:cardUseCompatPadding="true"
-            card_view:contentPadding="4dp"
-            android:layout_centerInParent="true"
-            android:layout_alignParentEnd="true">
-
-            <TextView
-                android:id="@+id/notify_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:textColor="#eee"
-                android:textStyle="bold"
-                tools:text="0"/>
-        </android.support.v7.widget.CardView>
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:textColor="#eee"
+            android:textStyle="bold"
+            tools:text="0" />
+    </android.support.v7.widget.CardView>
 
 
     <TextView
         android:id="@+id/drawer_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:ellipsize="end"
+        android:paddingStart="16sp"
+        android:paddingEnd="0sp"
         android:singleLine="true"
+        app:layout_constraintBottom_toTopOf="@+id/drawer_status"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textStyle="bold"
-        tools:text="Steam Name"
-        android:paddingStart="6sp"
-        android:layout_below="@id/drawer_avatar"/>
+        tools:text="Steam Name" />
 
     <TextView
         android:id="@+id/drawer_status"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="16sp"
+        android:paddingEnd="0sp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:singleLine="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        tools:text="Online"
-        android:paddingStart="6sp"
-        android:layout_below="@id/drawer_name"/>
+        tools:text="Online" />
 
-    </RelativeLayout>
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

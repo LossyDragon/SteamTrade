@@ -1,57 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/account"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
+    android:id="@+id/account"
+    android:layout_width="wrap_content"
+    android:layout_height="72dp"
+    android:layout_marginBottom="6dp"
     android:clickable="true"
     android:focusable="true"
     android:orientation="horizontal">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/account_avatar"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_margin="8dip"
-        app:civ_border_color="@color/steam_offline"
-        app:civ_border_width="2dip"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:layout_margin="12dp"
+        android:contentDescription="@string/DESC_steam_avatar"
+        android:padding="4dp"
         android:src="@drawable/default_avatar"
-        android:contentDescription="@string/steam_avatar"
-        />
+        app:civ_border_color="@color/steam_offline"
+        app:civ_border_width="2dip" />
 
-    <TextView
-        android:id="@+id/account_name"
-        android:layout_width="0dp"
+    <RelativeLayout
+        android:id="@+id/account_info"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:textStyle="bold"
-        tools:text="Name"/>
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/account_avatar">
 
-    <ImageButton
-        android:id="@+id/account_key"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_margin="8dip"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="@string/steamguard_mobile_authenticator"
-        android:src="@drawable/ic_key"/>
+        <TextView
+            android:id="@+id/account_name"
+            android:layout_width="192dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+            android:textStyle="normal"
+            tools:text="Name" />
 
-    <ImageButton
-        android:id="@+id/account_delete"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_margin="8dip"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="@string/steam_avatar"
-        android:src="@drawable/ic_delete"/>
+    </RelativeLayout>
 
-</LinearLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/account_info"
+        android:paddingEnd="16dp"
+        android:paddingStart="0dp">
+
+        <ImageButton
+            android:id="@+id/account_key"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/account_delete"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/DESC_mobile_authenticator"
+            android:src="@drawable/ic_key" />
+
+        <ImageButton
+            android:id="@+id/account_delete"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="8dip"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/DESC_account_delete"
+            android:src="@drawable/ic_delete" />
+
+    </RelativeLayout>
+</RelativeLayout>

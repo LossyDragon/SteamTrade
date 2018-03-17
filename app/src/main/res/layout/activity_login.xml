@@ -1,257 +1,228 @@
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".LoginActivity">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context="com.aegamesi.steamtrade.LoginActivity">
 
-    <ScrollView
+    <!-- TODO: Fix small screen support down to 720p -->
+
+    <!-- Ice Logo and description -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical">
 
-        <RelativeLayout
-            android:id="@+id/login_layout"
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@string/description_logo"
+            android:src="@drawable/ice_logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/app_name"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#ffffffff"
+            android:textSize="35sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="30dp"
+            android:linksClickable="false"
+            android:text="@string/developed_by_aegamesi"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- Top view divider -->
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/darker_gray" />
+
+    <!-- Sign in Layout here -->
+    <LinearLayout
+        android:id="@+id/layout_new"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:gravity="start"
+                android:hint="@string/prompt_username"
+                android:importantForAutofill="no"
+                android:inputType="textEmailAddress|textNoSuggestions"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@android:color/white" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:focusableInTouchMode="true"
+                android:gravity="start"
+                android:hint="@string/prompt_password"
+                android:imeActionId="@+id/login"
+                android:imeActionLabel="@string/action_sign_in"
+                android:imeOptions="actionUnspecified"
+                android:importantForAutofill="no"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                tools:ignore="InvalidImeActionId" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/steamguard_field"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="8dp">
+            android:layout_marginBottom="8dp"
+            android:visibility="visible">
 
-            <LinearLayout
-                android:id="@+id/logo"
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/steamguard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+                android:gravity="start"
+                android:hint="@string/prompt_steamguard"
+                android:imeActionId="@+id/login"
+                android:imeActionLabel="@string/action_sign_in"
+                android:imeOptions="actionUnspecified"
+                android:importantForAutofill="no"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:maxLines="1"
+                android:singleLine="true"
+                tools:ignore="InvalidImeActionId" />
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="124dp"
-                    android:contentDescription="@string/description_logo"
-                    android:src="@drawable/ice_logo"/>
-            </LinearLayout>
+        </android.support.design.widget.TextInputLayout>
 
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/logo"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/app_name"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="#ffffffff"
-                android:textSize="35sp"
-                android:textStyle="bold"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            tools:ignore="NestedWeights" />
 
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/textView"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:linksClickable="false"
-                android:text="@string/developed_by"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="15sp"/>
+        <Button
+            android:id="@+id/btn_import_account"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dip"
+            android:background="@null"
+            android:text="@string/btn_import_account"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/login_warning"
-                android:layout_alignWithParentIfMissing="true"
-                android:layout_below="@id/textView2"
-                android:layout_gravity="center_horizontal"
-                android:gravity="center_vertical"
-                android:minHeight="280dp"
-                android:orientation="vertical">
 
-                <android.support.v7.widget.CardView
-                    android:id="@+id/card_saved"
-                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    card_view:cardBackgroundColor="@color/cardview_dark_background"
-                    card_view:cardCornerRadius="4dp"
-                    card_view:cardElevation="4dp"
-                    card_view:cardUseCompatPadding="true">
+        <CheckBox
+            android:id="@+id/remember"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="12dp"
+            android:checked="true"
+            android:text="@string/prompt_remember" />
 
-                    <TextView
-                        android:id="@+id/header_saved"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:background="?attr/selectableItemBackground"
-                        android:gravity="center_horizontal"
-                        android:padding="8dp"
-                        android:text="@string/login_saved"
-                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
-                        android:visibility="visible"/>
+        <Button
+            android:id="@+id/sign_in_button"
+            style="?android:textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/action_sign_in"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:id="@+id/layout_saved"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="4dp"
-                        android:orientation="vertical"
-                        android:visibility="gone">
+    </LinearLayout>
 
-                        <android.support.v7.widget.RecyclerView
-                            android:id="@+id/accounts_list"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:scrollbars="vertical"
-                            android:visibility="visible">
 
-                        </android.support.v7.widget.RecyclerView>
+    <!-- Existing account layout here -->
+    <LinearLayout
+        android:id="@+id/layout_saved"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="visible">
 
-                    </LinearLayout>
-                </android.support.v7.widget.CardView>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/accounts_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:visibility="visible"
+            tools:itemCount="1"
+            tools:listitem="@layout/activity_login_account" />
 
-                <android.support.v7.widget.CardView
-                    android:id="@+id/card_new"
-                    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    card_view:cardBackgroundColor="@color/cardview_dark_background"
-                    card_view:cardCornerRadius="4dp"
-                    card_view:cardElevation="4dp"
-                    card_view:cardUseCompatPadding="true">
+    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/header_new"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:background="?attr/selectableItemBackground"
-                        android:gravity="center_horizontal"
-                        android:padding="8dp"
-                        android:text="@string/login_different"
-                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
-                        android:visibility="gone"/>
+    <!-- Bottom View divider -->
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:background="@android:color/darker_gray" />
 
-                    <LinearLayout
-                        android:id="@+id/layout_new"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="4dp"
-                        android:orientation="vertical"
-                        android:visibility="visible">
+    <!-- Overlapping buttons, one or the other depending on the condition -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="bottom"
+        android:orientation="horizontal">
 
-                        <EditText
-                            android:id="@+id/username"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="20dip"
-                            android:layout_marginRight="20dip"
-                            android:ems="10"
-                            android:gravity="center"
-                            android:hint="@string/prompt_username"
-                            android:inputType="textEmailAddress|textNoSuggestions"
-                            android:maxLines="1"
-                            android:singleLine="true"
-                            android:importantForAutofill="no">
-                        </EditText>
+        <Button
+            android:id="@+id/btn_header_saved"
+            style="@null"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:background="@null"
+            android:text="@string/login_saved" />
 
-                        <EditText
-                            android:id="@+id/password"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="20dip"
-                            android:layout_marginRight="20dip"
-                            android:ems="10"
-                            android:gravity="center"
-                            android:hint="@string/prompt_password"
-                            android:imeActionId="@+id/login"
-                            android:imeActionLabel="@string/action_sign_in"
-                            android:imeOptions="actionUnspecified"
-                            android:inputType="textPassword"
-                            android:maxLines="1"
-                            android:singleLine="true"
-                            android:importantForAutofill="no"
-                            tools:ignore="InvalidImeActionId" />
+        <Button
+            android:id="@+id/btn_header_new"
+            style="@null"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:background="@null"
+            android:text="@string/login_different" />
 
-                        <EditText
-                            android:id="@+id/steamguard"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="20dip"
-                            android:layout_marginRight="20dip"
-                            android:gravity="center"
-                            android:hint="@string/prompt_steamguard"
-                            android:imeActionId="@+id/login"
-                            android:imeActionLabel="@string/action_sign_in"
-                            android:imeOptions="actionUnspecified"
-                            android:inputType="textCapCharacters|textNoSuggestions"
-                            android:maxLines="1"
-                            android:singleLine="true"
-                            android:importantForAutofill="no"
-                            tools:ignore="InvalidImeActionId" />
+    </LinearLayout>
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1">
-                        </View>
-
-                        <CheckBox
-                            android:id="@+id/remember"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-
-                            android:checked="true"
-                            android:gravity="center"
-                            android:text="@string/prompt_remember"/>
-
-                        <Button
-                            android:id="@+id/sign_in_button"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:paddingLeft="32dp"
-                            android:paddingRight="32dp"
-                            android:text="@string/action_sign_in"
-                            />
-                    </LinearLayout>
-                </android.support.v7.widget.CardView>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/login_warning"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:background="@color/color_trade_white"
-                android:paddingBottom="4dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="4dp"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/login_warning_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center"
-                    android:text="@string/feature_not_implemented"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@color/color_trade_blacktext"
-                    />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/button_overflow"
-                style="@style/MaterialStyleImageButton"
-                android:layout_width="32dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:text="@string/btn_3dots"
-                android:textSize="35sp"/>
-        </RelativeLayout>
-    </ScrollView>
-</merge>
+</LinearLayout>

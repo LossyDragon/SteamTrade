@@ -1,12 +1,17 @@
 package com.aegamesi.steamtrade.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.v4.app.Fragment;
 
 import com.aegamesi.steamtrade.MainActivity;
+import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.steam.SteamMessageHandler;
+import com.squareup.picasso.Picasso;
 
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg;
+
 
 public class FragmentBase extends Fragment implements SteamMessageHandler {
 	protected boolean abort = false;
@@ -30,14 +35,44 @@ public class FragmentBase extends Fragment implements SteamMessageHandler {
 		return (MainActivity) getActivity();
 	}
 
+	/* Toolbar Status text */
 	public void setTitle(CharSequence title) {
 		if (activity() != null && activity().toolbar != null) {
-			activity().toolbar.setTitle(title);
+			activity().toolbarTextView.setText(title);
+		}
+	}
+
+	/* Toolbar CircleImageView visibility */
+	public void setToolBarAvatar(int vis){
+		if (activity() != null && activity().toolbar != null) {
+			activity().toolbarImageLayout.setVisibility(vis);
+		}
+	}
+
+	/* Toolbar CircleImageView set color */
+	public void setToolBarIconColor(@ColorInt int color) {
+		if (activity() != null && activity().toolbar != null) {
+			activity().toolbarImageView.setBorderColor(color);
+		}
+	}
+
+	/* Toolbar CircleImageView set picture */
+	public void setToolBarPicture(String uri) {
+		if (activity() != null && activity().toolbar != null) {
+			Picasso.get()
+					.load(uri)
+					.error(R.drawable.default_avatar)
+					.into(activity().toolbarImageView);
 		}
 	}
 
 	@Override
 	public void handleSteamMessage(CallbackMsg msg) {
 		// by default, do nothing
+	}
+
+	@SuppressWarnings({"SameReturnValue", "unused"})
+	public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+		return false;
 	}
 }

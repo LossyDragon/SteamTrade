@@ -4,11 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.util.Base64;
 
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.lib.android.AndroidUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -30,7 +29,6 @@ public class SteamTwoFactor {
 	 * @param steamID The steamID to base the deviceID off of.
 	 * @return A String representing an android-specific device ID.
 	 */
-	@NonNull
 	public static String generateDeviceID(SteamID steamID) {
 		String hash = steamID.render() + DEVICE_ID_SALT;
 		hash = SteamUtil.bytesToHex(SteamUtil.calculateSHA1(hash.getBytes()));
@@ -52,7 +50,7 @@ public class SteamTwoFactor {
 	 * @param time_offset The number of seconds to offset the current time by.
 	 * @return Local time with offset, in seconds.
 	 */
-	public static long getCurrentTime(int time_offset) {
+	private static long getCurrentTime(int time_offset) {
 		return (System.currentTimeMillis() / 1000L) + time_offset;
 	}
 
@@ -103,7 +101,7 @@ public class SteamTwoFactor {
 	 *                        "cancel" to cancel it.
 	 * @return String key
 	 */
-	public static String generateConfirmationKey(byte[] identity_secret, long time, String tag) {
+	private static String generateConfirmationKey(byte[] identity_secret, long time, String tag) {
 		if (tag == null)
 			tag = "";
 		ByteBuffer byteBuffer = ByteBuffer.allocate(8 + Math.min(tag.length(), 32));
@@ -126,7 +124,7 @@ public class SteamTwoFactor {
 	/**
 	 * Generate confirmation tag parameters
 	 *
-	 * @return nothing
+	 * @return ""
 	 */
 	public static String generateConfirmationParameters(Context context, String tag) {
 		String username = SteamService.singleton.username;

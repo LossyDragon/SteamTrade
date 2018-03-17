@@ -4,27 +4,27 @@
     <item
         android:id="@+id/web_back"
         android:icon="@drawable/ic_arrow_left"
-        android:title="@string/web_back"
-        app:showAsAction="always"/>
+        android:title="@string/menu_web_back"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/web_forward"
-        android:title="@string/web_forward"
-        app:showAsAction="never"/>
+        android:title="@string/menu_web_forward"
+        app:showAsAction="never" />
     <item
         android:id="@+id/web_refresh"
-        android:title="@string/web_reload"
-        app:showAsAction="never"/>
+        android:title="@string/menu_web_reload"
+        app:showAsAction="never" />
     <item
         android:id="@+id/web_community"
-        android:title="@string/web_community"
-        app:showAsAction="never"/>
+        android:title="@string/menu_web_community"
+        app:showAsAction="never" />
     <item
         android:id="@+id/web_store"
-        android:title="@string/web_store"
-        app:showAsAction="never"/>
+        android:title="@string/menu_web_store"
+        app:showAsAction="never" />
     <item
         android:id="@+id/web_toggle_view"
         android:checkable="true"
-        android:title="@string/web_toggle_view"
-        app:showAsAction="never"/>
+        android:title="@string/menu_web_toggle_view"
+        app:showAsAction="never" />
 </menu>

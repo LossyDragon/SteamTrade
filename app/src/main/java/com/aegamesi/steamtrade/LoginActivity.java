@@ -1,7 +1,6 @@
 package com.aegamesi.steamtrade;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,17 +9,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -29,17 +28,17 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aegamesi.steamtrade.fragments.FragmentEula;
-import com.aegamesi.steamtrade.fragments.support.SteamGuardCodeView;
+import com.aegamesi.steamtrade.dialogs.EulaDialog;
+import com.aegamesi.steamtrade.dialogs.mProgressDialog;
 import com.aegamesi.steamtrade.steam.AccountLoginInfo;
 import com.aegamesi.steamtrade.steam.SteamConnectionListener;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamTwoFactor;
 import com.aegamesi.steamtrade.steam.SteamUtil;
+import com.aegamesi.steamtrade.dialogs.SteamGuardDialog;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -64,49 +63,48 @@ import static android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
 
 public class LoginActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_LOAD_MAFILE = 48399;
-    // Values for email and password at the time of the login attempt.
+
     public static String username;
     public static String password;
     private boolean need_twofactor = false;
-    // UI references.
+
     private CheckBox rememberInfoCheckbox;
     private EditText textUsername;
     private EditText textPassword;
     private EditText textSteamguard;
-    private Button buttonSignIn;
-    private View headerSaved;
-    private View headerNew;
+    private TextInputLayout steamGuardField;
     private View viewSaved;
     private View viewNew;
-    private View cardSaved;
-    private View cardNew;
 
     private ConnectionListener connectionListener = null;
-    private ProgressDialog progressDialog = null;
+
+    mProgressDialog progressDialog = null;
     private boolean active = false;
 
+    /* LoginActivity setup*/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         handleLegacy();
         setContentView(R.layout.activity_login);
+
         if (getSupportActionBar() != null)
             getSupportActionBar().hide();
 
-        // show the eula
-        FragmentEula eula = new FragmentEula();
-        if (eula.shouldCreateDialog(this))
-            eula.show(getSupportFragmentManager(), "tag");
+        /* Show the EULA */
+        EulaDialog eulaDialog = new EulaDialog();
+        if (eulaDialog.shouldCreateDialog(this))
+            eulaDialog.show(getSupportFragmentManager(), "tag");
 
         connectionListener = new ConnectionListener();
 
-        // prepare "drawers"
-        headerNew = findViewById(R.id.header_new);
-        headerSaved = findViewById(R.id.header_saved);
         viewNew = findViewById(R.id.layout_new);
         viewSaved = findViewById(R.id.layout_saved);
-        cardNew = findViewById(R.id.card_new);
-        cardSaved = findViewById(R.id.card_saved);
+        final Button headerNew = findViewById(R.id.btn_header_new);
+        final Button headerSaved = findViewById(R.id.btn_header_saved);
+        Button importAccount = findViewById(R.id.btn_import_account);
+
+        /* OnClickListener for switching between New and Saved Account sections */
         OnClickListener cardListener = new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -115,33 +113,40 @@ public class LoginActivity extends AppCompatActivity {
 
                 headerNew.setVisibility(isNew ? View.GONE : View.VISIBLE);
                 viewNew.setVisibility(isNew ? View.VISIBLE : View.GONE);
-                ((LayoutParams) cardNew.getLayoutParams()).weight = isNew ? 1 : 0;
 
                 headerSaved.setVisibility(isSaved ? View.GONE : View.VISIBLE);
                 viewSaved.setVisibility(isSaved ? View.VISIBLE : View.GONE);
-                ((LayoutParams) cardSaved.getLayoutParams()).weight = isSaved ? 1 : 0;
             }
         };
+
+        /* New & Saved button Click Listeners */
         headerNew.setOnClickListener(cardListener);
         headerSaved.setOnClickListener(cardListener);
+
         RecyclerView accountsList = findViewById(R.id.accounts_list);
+
         AccountListAdapter accountListAdapter = new AccountListAdapter();
         accountsList.setAdapter(accountListAdapter);
         accountsList.setLayoutManager(new LinearLayoutManager(this));
         if (accountListAdapter.getItemCount() == 0) {
             // only show the new one
             cardListener.onClick(headerNew);
-            cardSaved.setVisibility(View.GONE);
+            headerSaved.setVisibility(View.GONE);
         } else {
             cardListener.onClick(headerSaved);
         }
 
-        // prepare login form
+        /* Login form preparation */
         rememberInfoCheckbox = (findViewById(R.id.remember));
         textSteamguard = findViewById(R.id.steamguard);
         textSteamguard.setVisibility(View.GONE);
         textUsername = findViewById(R.id.username);
         textPassword = findViewById(R.id.password);
+        steamGuardField = findViewById(R.id.steamguard_field);
+        steamGuardField.setVisibility(View.INVISIBLE);
+        Button buttonSignIn = findViewById(R.id.sign_in_button);
+
+        /* Keyboard Stuff */
         textPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -153,7 +158,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        // show legacy information
+        /* Show legacy information */
         if (accountListAdapter.getItemCount() == 0) {
             if (getPreferences(MODE_PRIVATE).getBoolean("rememberDetails", true)) {
                 textUsername.setText(getPreferences(MODE_PRIVATE).getString("username", ""));
@@ -161,7 +166,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
-        buttonSignIn = findViewById(R.id.sign_in_button);
+        /* Click Listener for signing in */
         buttonSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -169,11 +174,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        Button buttonOverflow = findViewById(R.id.button_overflow);
-        buttonOverflow.setOnClickListener(new OnClickListener() {
+
+        /* Click Listener for .maFile importing */
+        importAccount.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                handleOverflowMenu(view);
+                SteamTwoFactor.promptForMafile(LoginActivity.this, REQUEST_CODE_LOAD_MAFILE);
             }
         });
     }
@@ -209,7 +215,7 @@ public class LoginActivity extends AppCompatActivity {
                         final EditText passwordInput = new EditText(this);
                         builder.setView(passwordInput);
                         passwordInput.setInputType(TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD);
-                        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 acc.password = passwordInput.getText().toString();
@@ -228,28 +234,11 @@ public class LoginActivity extends AppCompatActivity {
                     builder.setTitle(R.string.error);
                     builder.setMessage(e.toString());
                     builder.setCancelable(true);
-                    builder.setNeutralButton(R.string.ok, null);
+                    builder.setNeutralButton(android.R.string.ok, null);
                     builder.show();
                 }
             }
         }
-    }
-
-    private void handleOverflowMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.item_import_authenticator:
-                        SteamTwoFactor.promptForMafile(LoginActivity.this, REQUEST_CODE_LOAD_MAFILE);
-                        break;
-                }
-                return true;
-            }
-        });
-        popup.inflate(R.menu.login);
-        popup.show();
     }
 
     private void handleLegacy() {
@@ -292,7 +281,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         connectionListener.handle_result = true;
-        SteamService.attemptLogon(LoginActivity.this, connectionListener, bundle, true);
+        SteamService.attemptLogon(LoginActivity.this, connectionListener, bundle);
     }
 
     public void attemptLogin() {
@@ -301,8 +290,10 @@ public class LoginActivity extends AppCompatActivity {
             return;
 
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        assert cm != null;
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        NetworkInfo activeNetwork = null;
+        if (cm != null) {
+            activeNetwork = cm.getActiveNetworkInfo();
+        }
         if (activeNetwork == null || !activeNetwork.isConnected())
             Toast.makeText(this, R.string.not_connected_to_internet, Toast.LENGTH_LONG).show();
 
@@ -349,7 +340,7 @@ public class LoginActivity extends AppCompatActivity {
             bundle.putBoolean("remember", rememberInfoCheckbox.isChecked());
             bundle.putBoolean("twofactor", need_twofactor);
             connectionListener.handle_result = true;
-            SteamService.attemptLogon(LoginActivity.this, connectionListener, bundle, true);
+            SteamService.attemptLogon(LoginActivity.this, connectionListener, bundle);
         }
     }
 
@@ -378,43 +369,25 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // show any potential warnings...
-        int show_warning = -1;
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        assert cm != null;
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
-            show_warning = R.string.not_connected_to_internet;
-        }
-
-        TextView textLoginWarning = findViewById(R.id.login_warning_text);
-        if (show_warning != -1) {
-            textLoginWarning.setVisibility(View.VISIBLE);
-            textLoginWarning.setText(show_warning);
-        } else {
-            textLoginWarning.setVisibility(View.GONE);
-        }
-
         // set self as the steam connection listener
         SteamService.connectionListener = connectionListener;
     }
 
     private void showAndFillManualLogin(String username) {
-        headerNew.setVisibility(View.GONE);
+
+        // Set login view to manual sign in.
         viewNew.setVisibility(View.VISIBLE);
-        ((LayoutParams) cardNew.getLayoutParams()).weight = 1;
-
-        headerSaved.setVisibility(View.VISIBLE);
         viewSaved.setVisibility(View.GONE);
-        ((LayoutParams) cardSaved.getLayoutParams()).weight = 0;
 
-
+        //Get username information.
         AccountLoginInfo info = AccountLoginInfo.readAccount(this, username);
         if (info != null) {
             textUsername.setText(info.username);
             textPassword.setText(info.password);
 
             if (info.has_authenticator) {
+                //Show steamguard field.
+                textSteamguard.setVisibility(View.VISIBLE);
                 String code = SteamTwoFactor.generateAuthCodeForTime(info.tfa_sharedSecret, SteamTwoFactor.getCurrentTime());
                 textSteamguard.setText(code);
             }
@@ -428,7 +401,6 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         public void onConnectionResult(final EResult result) {
             Log.i("ConnectionListener", "Connection result: " + result);
-            final boolean pref_force_connect = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("pref_force_reconnect", true);
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -461,25 +433,16 @@ public class LoginActivity extends AppCompatActivity {
                     } else if (result == EResult.ServiceUnavailable) {
                         Toast.makeText(LoginActivity.this, R.string.cannot_auth_with_steamweb, Toast.LENGTH_LONG).show();
                     } else if (result == EResult.AccountLogonDenied || result == EResult.AccountLogonDeniedNoMail || result == EResult.AccountLogonDeniedVerifiedEmailRequired || result == EResult.AccountLoginDeniedNeedTwoFactor) {
+                        steamGuardField.setVisibility(View.VISIBLE);
                         textSteamguard.setVisibility(View.VISIBLE);
-                        textSteamguard.setError(getString(R.string.error_steamguard_required));
+                        steamGuardField.setError(getString(R.string.error_steamguard_required));
                         textSteamguard.requestFocus();
-
-                        if(!pref_force_connect) //Don't Toast clash if 'pref_force_connect' is true.
                         Toast.makeText(LoginActivity.this, "SteamGuard: " + result.name(), Toast.LENGTH_LONG).show();
 
                         String username = SteamService.extras.getString("username");
                         showAndFillManualLogin(username);
 
                         need_twofactor = result == EResult.AccountLoginDeniedNeedTwoFactor;
-
-                        //Setting for Force Log in.
-                        //if (pref_force_connect){
-                        //    Toast.makeText(LoginActivity.this, "Please wait! Logging in...", Toast.LENGTH_LONG).show();
-                        //    android.os.SystemClock.sleep(2500); //Steam servers are slow.
-                        //    buttonSignIn.performClick(); //Might work, calling attemptLogin() doesn't push to main activity.
-                        //}
-
                     } else if (result == EResult.InvalidLoginAuthCode || result == EResult.TwoFactorCodeMismatch) {
                         textSteamguard.setVisibility(View.VISIBLE);
                         textSteamguard.setError(getString(R.string.error_incorrect_steamguard));
@@ -489,7 +452,6 @@ public class LoginActivity extends AppCompatActivity {
                         showAndFillManualLogin(username);
 
                         need_twofactor = result == EResult.TwoFactorCodeMismatch;
-
                     } else if (result != EResult.OK) {
                         // who knows what this is. perhaps a bug report will reveal
                         Toast.makeText(LoginActivity.this, "Cannot Login: " + result.toString(), Toast.LENGTH_LONG).show();
@@ -500,7 +462,6 @@ public class LoginActivity extends AppCompatActivity {
 
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         intent.putExtra("isLoggingIn", true);
-                        Log.d ("Login Finish", "Heading to main Activity");
                         LoginActivity.this.startActivity(intent);
                         finish();
                     }
@@ -520,7 +481,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (status != STATUS_CONNECTED && status != STATUS_FAILURE) {
                         if (progressDialog == null || !progressDialog.isShowing()) {
-                            progressDialog = new ProgressDialog(LoginActivity.this);
+                            progressDialog = new mProgressDialog(LoginActivity.this);
                             progressDialog.setCancelable(true);
                             progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                                 @Override
@@ -550,13 +511,14 @@ public class LoginActivity extends AppCompatActivity {
             notifyDataSetChanged();
         }
 
+        @NonNull
         @Override
-        public AccountViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public AccountViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new AccountViewHolder(parent);
         }
 
         @Override
-        public void onBindViewHolder(AccountViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull AccountViewHolder holder, int position) {
             AccountLoginInfo account = accounts.get(position);
             holder.name.setText(account.username);
 
@@ -567,7 +529,7 @@ public class LoginActivity extends AppCompatActivity {
             String avatar = sharedPreferences.getString("avatar_" + account.username, "");
 
             if (!avatar.equals("")) {
-                Picasso.with(getApplicationContext())
+                Picasso.get()
                         .load(avatar)
                         .into(holder.avatar);
             }
@@ -607,8 +569,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (view.getId() == R.id.account_delete) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                    builder.setNegativeButton(R.string.cancel, null);
-                    builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(android.R.string.cancel, null);
+                    builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             accounts.remove(getAdapterPosition());
                             notifyItemRemoved(getAdapterPosition());
@@ -623,14 +585,8 @@ public class LoginActivity extends AppCompatActivity {
                     loginWithSavedAccount(account);
                 }
                 if (view.getId() == R.id.account_key) {
-                    SteamGuardCodeView codeView = new SteamGuardCodeView(LoginActivity.this);
-                    codeView.setSharedSecret(account.tfa_sharedSecret);
+                    SteamGuardDialog.newInstance(account.tfa_sharedSecret).show(getSupportFragmentManager(), SteamGuardDialog.TAG);
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                    builder.setNeutralButton(R.string.ok, null);
-                    builder.setCancelable(true);
-                    builder.setView(codeView);
-                    builder.show();
                 }
             }
         }

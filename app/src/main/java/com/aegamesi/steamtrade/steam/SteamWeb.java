@@ -1,7 +1,5 @@
 package com.aegamesi.steamtrade.steam;
 
-import android.support.annotation.NonNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +21,7 @@ public class SteamWeb {
 	/**
 	 * The user-agent string to use when making requests.
 	 */
-	private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
+	private final static String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
 	//final static String USER_AGENT_MOBILE = "Mozilla/5.0 (Linux; U; Android 4.1.1; en-us; Google Nexus 4 - 4.1.1 - API 16 - 768x1280 Build/JRO03S) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
 
 	/**
@@ -83,10 +81,7 @@ public class SteamWeb {
 	 *                headers.
 	 * @return The server's String response to the request.
 	 */
-	@NonNull
-	private static String request(String url, String method, Map<String, String> data,
-								  String cookies, String referrer) {
-
+	private static String request(String url, String method, Map<String, String> data, String cookies, String referrer) {
 		StringBuilder out = new StringBuilder();
 		try {
 			String dataString;
@@ -120,23 +115,23 @@ public class SteamWeb {
 							+ "application/xml, text/xml, */*");
 
 			/*
-			 * Turns out we need a referer, otherwise we get an error from
-			 * the server. Just use the trade URL as one since we have it on
-			 * hand, and it's been known to work.
-			 *
-			 * http://steamcommunity.com/trade/1 was used for other
-			 * libraries, but having a hardcoded thing like that is gross.
-			 **/
+			  Turns out we need a referer, otherwise we get an error from
+			  the server. Just use the trade URL as one since we have it on
+			  hand, and it's been known to work.
 
+			  http://steamcommunity.com/trade/1 was used for other
+			  libraries, but having a hardcoded thing like that is gross.
+			 */
 			conn.setRequestProperty("Referer", referrer);
 
 			// Accept compressed responses.  (We can decompress it.)
 			conn.setRequestProperty("Accept-Encoding", "gzip,deflate");
 
-			conn.setRequestProperty("X-Requested-With", "XMLHttpRequest");
-			conn.setRequestProperty("X-Prototype-Version", "1.7");
+            conn.setRequestProperty("X-Requested-With",
+                    "XMLHttpRequest");
+            conn.setRequestProperty("X-Prototype-Version", "1.7");
 
-			if (method.equals("POST")) {
+            if (method.equals("POST")) {
 				conn.setDoOutput(true);
 				try {
 					OutputStreamWriter os = new OutputStreamWriter(conn.getOutputStream());

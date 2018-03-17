@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <!-- EULA Disclaimer -->
+        <string name="EULA"><![CDATA[
+                While great effort has been made to ensure that this software is as bug-free
+        and glitch-free as possible, no guarantee of this can be made. You may not modify or distribute
+        this program, or use or reverse engineering it maliciously or with the intent to cause harm to
+        others.
+        <br><br>
+                The software developer is not responsible for any damage to your account or
+        device, including but not limited to the loss of items. This program comes with
+        ABSOLUTELY NO WARRANTY.
+        <br><br>
+                This Application uses your Steam username and password to
+        access the Steam network. Your username and password will be transmitted only to Steam Servers,
+        and your login data is not saved unless requested by the user.
+        <br><br>
+                By using this Application, you agree to the
+        <a href=http://steamcommunity.com/dev/apiterms>Steam Web API Terms of Use</a>.
+        This Application is <a href=http://steampowered.com>Powered by Steam</a>.
+        This Application is not owned by, created by, sponsored by, endorsed by,
+        or otherwise affiliated with Valve Corporation in any way.
+        Steam and all related trademarks are the property of Valve Corporation.
+        <br><br>
+                Ice is developed by <a href=https://aegamesi.com>aegamesi</a>.]]>
+        </string>
+
+        <!--
+        [This portion removed from line 18. Forked source and analytics removed for playground use]
+        This Application uses Google Analytics to collect usage data.
+        All data (including potentially demographic data) is collected anonymously.
+        <br><br> -->
+</resources>

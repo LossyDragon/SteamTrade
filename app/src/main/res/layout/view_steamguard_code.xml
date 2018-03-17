@@ -1,37 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-android:orientation="vertical"
-android:padding="8dp">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="8dp">
 
-<TextView
-    android:id="@+id/textView3"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:text="@string/steamguard_code"
-    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-    android:textColor="#ffffff"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/steamguard_code"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="#ffffff"/>
 
-<TextView
-    android:id="@+id/steamguard_code"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:layout_marginTop="8dp"
-    android:singleLine="true"
-    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-    android:textSize="36sp"
-    android:textStyle="bold"
-    tools:text="A2X4Y"/>
+    <TextView
+        android:id="@+id/steamguard_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        tools:text="STEAM"/>
 
-<ProgressBar
-    android:id="@+id/steamguard_time"
-    style="?android:attr/progressBarStyleHorizontal"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:progress="50"/>
+    <ProgressBar
+        android:id="@+id/steamguard_time"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:progress="50"/>
 </LinearLayout>

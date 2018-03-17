@@ -31,7 +31,7 @@
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 android:src="@drawable/default_game"
-                android:contentDescription="@string/todo" />
+                android:contentDescription="@string/DESC_library_picture" />
 
             <TextView
                 android:id="@+id/game_name"

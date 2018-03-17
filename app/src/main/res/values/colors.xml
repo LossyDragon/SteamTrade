@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#454545</color>
-    <color name="color_trade_blacktext">#282827</color>
-    <color name="color_trade_white">#A3A099</color>
-    <color name="color_chat_left">#B3E5FC</color>
-    <color name="color_chat_right">#607D8B</color>
-    <color name="color_friend_unread">#555</color>
+    <color name="toolbar_background">#212121</color>
+    <color name="navBar_background">#212121</color>
+
+    <color name="steam_online">#9CC6FF</color>
+    <color name="steam_game">#AED04E</color>
+    <color name="steam_offline">#CFD2D3</color>
+    <color name="steam_blocked">#F26C4F</color>
 
     <color name="chat_divider">#22FFFFFF</color>
 
@@ -14,9 +15,4 @@
     <color name="notification_text_on">#70ba24</color>
     <color name="notification_text_off">#bfbfbf</color>
 
-    <!-- Friend Status -->
-    <color name="steam_online">#9CC6FF</color>
-    <color name="steam_game">#AED04E</color>
-    <color name="steam_offline">#CFD2D3</color>
-    <color name="steam_blocked">#F26C4F</color>
 </resources>

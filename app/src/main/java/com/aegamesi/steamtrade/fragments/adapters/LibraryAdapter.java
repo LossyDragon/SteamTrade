@@ -1,6 +1,6 @@
-package com.aegamesi.steamtrade.fragments.support;
+package com.aegamesi.steamtrade.fragments.adapters;
 
-import android.annotation.SuppressLint;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -9,9 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.fragments.FragmentLibrary;
-import com.aegamesi.steamtrade.lib.android.AndroidUtil;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -33,25 +33,25 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 		filteredList = new ArrayList<>();
 	}
 
+	@NonNull
 	@Override
-	public ViewHolderGame onCreateViewHolder(ViewGroup parent, int viewType) {
+	public ViewHolderGame onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		return new ViewHolderGame(parent);
 	}
 
-	@SuppressLint("DefaultLocale")
 	@Override
-	public void onBindViewHolder(ViewHolderGame h, int position) {
+	public void onBindViewHolder(@NonNull ViewHolderGame h, int position) {
 		FragmentLibrary.LibraryEntry entry = filteredList.get(position);
-		h.itemView.setTag(entry);
-		h.imageHeader.setImageResource(R.drawable.default_game);
 
+		h.itemView.setTag(entry);
+
+		h.imageHeader.setImageResource(R.drawable.default_game);
 		if (entry.img_logo_url.trim().length() > 0) {
 			String image_url = "http://media.steampowered.com/steamcommunity/public/images/apps/%d/%s.jpg";
 
-			Picasso.with(fragment.getContext())
-					.load(String.format(image_url, entry.appid, entry.img_logo_url))
+			Picasso.get()
+					.load(String.format(Locale.US, image_url, entry.appid, entry.img_logo_url))
 					.into(h.imageHeader);
-
 		}
 
 		h.textName.setText(entry.name);
@@ -111,11 +111,11 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 	}
 
 	class ViewHolderGame extends ViewHolder {
-		private ImageView imageHeader;
-		private TextView textName;
-		private TextView textPlaytime;
+		ImageView imageHeader;
+		TextView textName;
+		TextView textPlaytime;
 
-		private ViewHolderGame(ViewGroup parent) {
+		ViewHolderGame(ViewGroup parent) {
 			super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_library_item, parent, false));
 
 			imageHeader = itemView.findViewById(R.id.game_banner);

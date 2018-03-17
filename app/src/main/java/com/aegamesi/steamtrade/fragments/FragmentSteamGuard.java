@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -18,9 +19,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.fragments.support.SteamGuardCodeView;
-import com.aegamesi.steamtrade.lib.android.AndroidUtil;
+import com.aegamesi.steamtrade.views.SteamGuardCodeView;
 import com.aegamesi.steamtrade.steam.AccountLoginInfo;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamTwoFactor;
@@ -43,7 +44,6 @@ import uk.co.thomasc.steamkit.util.cSharp.events.ActionT;
 
 public class FragmentSteamGuard extends FragmentBase implements OnClickListener {
 	public static final int REQUEST_CODE_LOAD = 48235;
-	//public static final int REQUEST_CODE_SAVE = 48236;
 
 	public SteamGuardCodeView steamGuardCodeView;
 	public View steamGuardCodeCard;
@@ -109,7 +109,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 								finalizeAuthenticator();
 							}
 						});
-						alert.setNegativeButton(R.string.cancel, null);
+						alert.setNegativeButton(android.R.string.cancel, null);
 						alert.show();
 					} else {
 						String errorMessage = String.format(getString(R.string.steamguard_enable_failure), status.name());
@@ -165,7 +165,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		inflater = activity().getLayoutInflater();
 		final View view = inflater.inflate(R.layout.fragment_steamguard, container, false);
 
@@ -173,7 +173,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 		textSteamGuardStatus = view.findViewById(R.id.steamguard_status);
 		buttonSteamGuardManage = view.findViewById(R.id.steamguard_manage);
 		steamGuardCodeCard = view.findViewById(R.id.steamguard_code_card);
-		buttonRevocationCode =  view.findViewById(R.id.steamguard_revocation);
+		buttonRevocationCode = view.findViewById(R.id.steamguard_revocation);
 		buttonPort = view.findViewById(R.id.steamguard_port);
 
 		buttonSteamGuardManage.setOnClickListener(this);
@@ -225,8 +225,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 	public void onClick(View v) {
 		if (v == buttonSteamGuardManage) {
 			if (hasAuthenticator()) {
-				// https://store.steampowered.com/twofactor/manage
-				// go to that webpage
+				//Go to: https://store.steampowered.com/twofactor/manage
 				String url = "https://store.steampowered.com/twofactor/manage/";
 				FragmentWeb.openPage(activity(), url, true);
 			} else {
@@ -243,7 +242,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 				builder.setTitle(R.string.steamguard_mobile_authenticator);
 				builder.setMessage(String.format(getString(R.string.steamguard_revocation_code), info.tfa_revocationCode));
 				builder.setCancelable(true);
-				builder.setNeutralButton(R.string.ok, null);
+				builder.setNeutralButton(android.R.string.ok, null);
 				builder.show();
 			}
 		}
@@ -276,6 +275,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 		}
 	}
 
+	@Override
 	public boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == REQUEST_CODE_LOAD) {
 			boolean success = false;
@@ -303,7 +303,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 							builder.setTitle(R.string.steamguard_mobile_authenticator);
 							builder.setMessage(String.format(getString(R.string.steamguard_enable_success), accountLoginInfo.tfa_revocationCode));
 							builder.setCancelable(true);
-							builder.setNeutralButton(R.string.ok, null);
+							builder.setNeutralButton(android.R.string.ok, null);
 							builder.show();
 							success = true;
 
@@ -313,7 +313,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 							builder.setTitle(R.string.steamguard_mobile_authenticator);
 							builder.setMessage(String.format(getString(R.string.steamguard_import_error_wrong_account), accountLoginInfo.tfa_accountName));
 							builder.setCancelable(true);
-							builder.setNeutralButton(R.string.ok, null);
+							builder.setNeutralButton(android.R.string.ok, null);
 							builder.show();
 						}
 					}
@@ -323,7 +323,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 					builder.setTitle(R.string.error);
 					builder.setMessage(e.toString());
 					builder.setCancelable(true);
-					builder.setNeutralButton(R.string.ok, null);
+					builder.setNeutralButton(android.R.string.ok, null);
 					builder.show();
 				}
 			}

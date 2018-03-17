@@ -1,11 +1,9 @@
 package com.aegamesi.steamtrade;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,7 +11,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -28,14 +25,18 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.aegamesi.steamtrade.fragments.FragmentAbout;
+import com.aegamesi.steamtrade.dialogs.AboutDialog;
+import com.aegamesi.steamtrade.dialogs.mProgressDialog;
 import com.aegamesi.steamtrade.fragments.FragmentFriends;
 import com.aegamesi.steamtrade.fragments.FragmentLibrary;
 import com.aegamesi.steamtrade.fragments.FragmentMe;
@@ -50,34 +51,30 @@ import com.squareup.picasso.Picasso;
 import java.util.Locale;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
+import de.hdodenhof.circleimageview.CircleImageView;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.FriendAddedCallback;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.PersonaStateCallback;
-import uk.co.thomasc.steamkit.steam3.handlers.steamgamecoordinator.SteamGameCoordinator;
 import uk.co.thomasc.steamkit.steam3.handlers.steamnotifications.SteamNotifications;
 import uk.co.thomasc.steamkit.steam3.handlers.steamnotifications.callbacks.NotificationUpdateCallback;
-import uk.co.thomasc.steamkit.steam3.handlers.steamtrading.SteamTrading;
 import uk.co.thomasc.steamkit.steam3.handlers.steamuser.SteamUser;
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg;
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback;
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT;
-
-
-//TODO: Interactive Notifications?
-//TODO: UI redesign?
 
 public class MainActivity extends AppCompatActivity implements SteamMessageHandler, OnNavigationItemSelectedListener {
 	public MainActivity instance = null;
 	public boolean isActive = false;
 
 	public SteamFriends steamFriends;
-	public SteamTrading steamTrade;
-	public SteamGameCoordinator steamGC;
 	public SteamUser steamUser;
 	public SteamNotifications steamNotifications;
 	public Toolbar toolbar;
+	public TextView toolbarTextView;
+	public CircleImageView toolbarImageView;
+	public LinearLayout toolbarImageLayout;
 	public ProgressBar progressBar;
 	private DrawerLayout drawerLayout;
 	private ImageView drawerAvatar;
@@ -90,13 +87,14 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		/* Custom app crash logger */
 		CaocConfig.Builder.create()
-				.backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT) //default: CaocConfig.BACKGROUND_MODE_SHOW_CUSTOM
-				.enabled(true) //default: true
-				.showErrorDetails(true) //default: true
-				.showRestartButton(true) //default: true
-				.logErrorOnRestart(true) //default: true
-				.trackActivities(true) //default: false
+				.backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT)
+				.enabled(true)
+				.showErrorDetails(true)
+				.showRestartButton(true)
+				.logErrorOnRestart(true)
+				.trackActivities(true)
 				.apply();
 
 		if (!assertSteamConnection())
@@ -107,8 +105,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 
 		// inform the user about SteamGuard restrictions
 		if (SteamService.extras != null && SteamService.extras.getBoolean("alertSteamGuard", false)) {
+
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
+			builder.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					if (SteamService.extras != null)
@@ -121,16 +120,21 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 
 		// get the standard steam handlers
 		SteamService.singleton.messageHandler = this;
-		steamTrade = SteamService.singleton.steamClient.getHandler(SteamTrading.class);
 		steamUser = SteamService.singleton.steamClient.getHandler(SteamUser.class);
 		steamFriends = SteamService.singleton.steamClient.getHandler(SteamFriends.class);
-		steamGC = SteamService.singleton.steamClient.getHandler(SteamGameCoordinator.class);
 		steamNotifications = SteamService.singleton.steamClient.getHandler(SteamNotifications.class);
 
-		// set up the toolbar
+		// set up the progressBar and toolbar
 		progressBar = findViewById(R.id.progress_bar);
 		toolbar = findViewById(R.id.toolbar);
+		//Custom toolbar layout.
+		toolbarTextView = findViewById(R.id.toolbar_status);
+		toolbarImageView = findViewById(R.id.toolbar_icon);
+		toolbarImageLayout = findViewById(R.id.toolbar_icon_LL);
+		toolbarImageLayout.setVisibility(View.GONE);
+
 		setSupportActionBar(toolbar);
+
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
 			actionBar.setDisplayHomeAsUpEnabled(true);
@@ -146,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			drawerLayout.addDrawerListener(toggle);
 			toggle.syncState();
 
-			NavigationView navigationView = findViewById(R.id.nav_view);
+			final NavigationView navigationView = findViewById(R.id.nav_view);
 			navigationView.setNavigationItemSelectedListener(this);
 
 			// set up
@@ -159,13 +163,13 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			drawerHeaderView.findViewById(R.id.drawer_profile).setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
+					unCheckAllMenuItems(navigationView.getMenu());
 					browseToFragment(new FragmentMe(), true);
 				}
 			});
 		}
 
 		// set up the nav drawer
-		updateDrawerProfile();
 		updateDrawerProfile();
 
 		if (savedInstanceState == null) {
@@ -176,8 +180,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		if (getIntent() != null && ((getIntent().getAction() != null && getIntent().getAction().equals(Intent.ACTION_VIEW)) || getIntent().getStringExtra("url") != null)) {
 			String url;
 			url = getIntent().getStringExtra("url");
-			if (url == null)
-				url = getIntent().getData().toString();
+			if (url == null) {
+				url = String.valueOf(getIntent().getData());
+			}
 
 			Log.d("Ice", "Received url: " + url);
 
@@ -200,19 +205,17 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		}
 	}
 
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
+	/* Un-check NavDrawer selected items */
+	private void unCheckAllMenuItems(@NonNull final Menu menu) {
+		int size = menu.size();
+		for (int i = 0; i < size; i++) {
+			final MenuItem item = menu.getItem(i);
+			if(item.hasSubMenu()) {
+				unCheckAllMenuItems(item.getSubMenu());
+			} else {
+				item.setChecked(false);
+			}
+		}
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -230,10 +233,13 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 	public void browseToFragment(Fragment fragment, boolean addToBackStack) {
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		FragmentTransaction transaction = fragmentManager.beginTransaction();
+
 		if (addToBackStack)
 			transaction.addToBackStack(null);
 
+		transaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right);
 		transaction.replace(R.id.content_frame, fragment, fragment.getClass().getName()).commit();
+
 		drawerLayout.closeDrawer(GravityCompat.START);
 	}
 
@@ -251,11 +257,15 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		drawerNotifyText.setText(String.format(Locale.US, "%1$d", notifications));
 		drawerNotifyCard.setCardBackgroundColor(ContextCompat.getColor(this, notifications == 0 ? R.color.notification_off : R.color.notification_on));
 
+		drawerAvatar.setImageResource(R.drawable.default_avatar);
 		if (!avatar.equals("0000000000000000000000000000000000000000")) {
-			String avatarURL = "http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg";
+			final String avatarURL = String.format(Locale.US,
+					"http://cdn.akamai.steamstatic.com/steamcommunity/public/images/avatars/%s/%s_full.jpg",
+					avatar.substring(0, 2),
+					avatar);
 
 			//Drawer Profile picture.
-			Picasso.with(this)
+			Picasso.get()
 					.load(avatarURL)
 					.into(drawerAvatar);
 
@@ -271,11 +281,12 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		msg.handle(DisconnectedCallback.class, new ActionT<DisconnectedCallback>() {
 			@Override
 			public void call(DisconnectedCallback obj) {
-				// go back to the login screen, only if currently active.
+				// go back to the login screen
+				// only if currently active
 				if (isActive) {
 					Intent intent = new Intent(MainActivity.this, LoginActivity.class);
 					MainActivity.this.startActivity(intent);
-					Snackbar.make(findViewById(R.id.main), R.string.error_disconnected, Snackbar.LENGTH_LONG).show();
+					Toast.makeText(MainActivity.this, R.string.error_disconnected, Toast.LENGTH_LONG).show();
 					finish();
 				}
 			}
@@ -284,7 +295,6 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			@Override
 			public void call(PersonaStateCallback obj) {
 				if (obj.getFriendID().equals(steamUser.getSteamId())) {
-					// update current user avatar / drawer
 					steamFriends.cache.getLocalUser().avatarHash = obj.getAvatarHash();
 					updateDrawerProfile();
 				}
@@ -294,9 +304,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			@Override
 			public void call(FriendAddedCallback obj) {
 				if (obj.getResult() != EResult.OK) {
-					Snackbar.make(findViewById(R.id.main), String.format(getString(R.string.friend_add_fail), obj.getResult().toString()), Snackbar.LENGTH_LONG).show();
+					Toast.makeText(MainActivity.this, String.format(getString(R.string.friend_add_fail), obj.getResult().toString()), Toast.LENGTH_LONG).show();
 				} else {
-					Snackbar.make(findViewById(R.id.main), getString(R.string.friend_add_success), Snackbar.LENGTH_LONG).show();
+					Toast.makeText(MainActivity.this, getString(R.string.friend_add_success), Toast.LENGTH_LONG).show();
 				}
 			}
 		});
@@ -306,6 +316,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 				updateDrawerProfile();
 			}
 		});
+
 
 		// Now, we find the fragments and pass the message on that way
 		FragmentManager fragmentManager = getSupportFragmentManager();
@@ -345,62 +356,71 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		}
 	}
 
-	//Toggle the drawer and hide the keyboard.
 	public void toggleDrawer() {
 		if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerLayout.closeDrawer(GravityCompat.START);
 		} else {
+			// hide IME
+			InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+			if (inputManager != null && this.getCurrentFocus() != null)
+				inputManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+
 			drawerLayout.openDrawer(GravityCompat.START);
 		}
-
-		// hide IME
-		InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		if (inputManager != null && this.getCurrentFocus() != null)
-			inputManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
 	}
 
-	@Override //New NavBar selector.
+	@Override
 	public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-		int id = menuItem.getItemId();
-
-		if (id == R.id.nav_friends){
-			browseToFragment(new FragmentFriends(), true);
-		}else if (id == R.id.nav_games){
-			browseToFragment(new FragmentLibrary(), true);
-		}else if (id == R.id.nav_browser){
-			browseToFragment(new FragmentWeb(), true);
-		}else if (id == R.id.nav_settings){
-			browseToFragment(new FragmentSettings(), true);
-		}else if (id == R.id.nav_about){
-			browseToFragment(new FragmentAbout(), true);
-		}else if (id == R.id.nav_signout){
-			disconnectWithDialog(this, getString(R.string.signingout));
+		switch (menuItem.getItemId()) {
+			case R.id.nav_friends:
+				browseToFragment(new FragmentFriends(), true);
+				break;
+			case R.id.nav_games:
+				browseToFragment(new FragmentLibrary(), true);
+				break;
+			case R.id.nav_browser:
+				browseToFragment(new FragmentWeb(), true);
+				break;
+			case R.id.nav_settings:
+				//Settings doesn't utilize Fragmentbase, force title.
+				setTitle(R.string.nav_settings);
+				browseToFragment(new FragmentSettings(), true);
+				break;
+			case R.id.nav_about:
+				AboutDialog.newInstance().show(getSupportFragmentManager(), AboutDialog.TAG);
+				break;
+			case R.id.nav_signout:
+				disconnectWithDialog(this, getString(R.string.signingout));
+				return true;
+			default:
+				return true;
 		}
-		toolbar.setTitle(menuItem.getTitle());
+
+		drawerLayout.closeDrawer(GravityCompat.START);
 		return true;
 	}
 
-	//TODO ProgressBar deprecated...
-	private void disconnectWithDialog(final Context context, final String message) {
+	public void disconnectWithDialog(final Context context, final String message) {
 		@SuppressLint("StaticFieldLeak")
 		class SteamDisconnectTask extends AsyncTask<Void, Void, Void> {
-			private ProgressDialog dialog;
+			private mProgressDialog dialog;
 
 			@Override
 			protected Void doInBackground(Void... params) {
-				//this is really goddamn slow
+				// this is really goddamn slow
 				steamUser.logOff();
 				SteamService.attemptReconnect = false;
 				if (SteamService.singleton != null) {
 					SteamService.singleton.disconnect();
 				}
+
 				return null;
 			}
 
 			@Override
 			protected void onPreExecute() {
 				super.onPreExecute();
-				dialog = new ProgressDialog(context);
+				dialog = new mProgressDialog(context);
 				dialog.setCancelable(false);
 				dialog.setMessage(message);
 				dialog.show();
@@ -418,7 +438,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 				// go back to login screen
 				Intent intent = new Intent(MainActivity.this, LoginActivity.class);
 				MainActivity.this.startActivity(intent);
-				Snackbar.make(findViewById(R.id.main), R.string.signed_out, Snackbar.LENGTH_LONG).show();
+				Toast.makeText(MainActivity.this, R.string.signed_out, Toast.LENGTH_LONG).show();
 				finish();
 			}
 		}
@@ -435,36 +455,6 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 	protected void onResume() {
 		super.onResume();
 		isActive = true;
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-		// fragments from intent
-		String fragmentName = getIntent().getStringExtra("fragment");
-		if (fragmentName != null) {
-			Class<? extends Fragment> fragmentClass = null;
-			try {
-				fragmentClass = (Class<? extends Fragment>) Class.forName(fragmentName);//No touchy
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-			if (fragmentClass != null) {
-				Fragment fragment = null;
-				try {
-					fragment = fragmentClass.newInstance();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
-				if (fragment != null) {
-					Bundle arguments = getIntent().getBundleExtra("arguments");
-					if (arguments != null)
-						fragment.setArguments(arguments);
-					browseToFragment(fragment, getIntent().getBooleanExtra("fragment_subfragment", true));
-				}
-			}
-		}
 	}
 
 	@SuppressWarnings("unchecked")

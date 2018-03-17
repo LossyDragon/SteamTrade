@@ -3,6 +3,7 @@ package com.aegamesi.steamtrade.fragments;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -40,10 +41,18 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 	public Button viewProfileButton;
 	public Button changeNameButton;
 	public Button buttonTwoFactor;
+
 	public TextView notifyComments;
 	public TextView notifyChat;
 
-	public int[] states = new int[]{1, 3, 2, 4, 5, 6}; // online, away, busy, snooze, lookingtotrade, lookingtoplay
+	public int[] states = new int[] {
+			1, //online
+			3, //away
+			2, //busy
+			4, //snooze
+			5, //lookingtotrade
+			6  //lookingtoplay
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,7 +73,7 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		inflater = activity().getLayoutInflater();
 		View view = inflater.inflate(R.layout.fragment_me, container, false);
 		avatarView = view.findViewById(R.id.profile_avatar);
@@ -73,7 +82,7 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		viewProfileButton = view.findViewById(R.id.me_view_profile);
 		changeNameButton = view.findViewById(R.id.me_set_name);
 		buttonTwoFactor = view.findViewById(R.id.me_two_factor);
-        notifyChat = view.findViewById(R.id.me_notify_chat);
+		notifyChat = view.findViewById(R.id.me_notify_chat);
 		notifyComments = view.findViewById(R.id.me_notify_comments);
 		notifyChat.setOnClickListener(this);
 		notifyComments.setOnClickListener(this);
@@ -85,6 +94,7 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		changeNameButton.setOnClickListener(this);
 		viewProfileButton.setOnClickListener(this);
 		buttonTwoFactor.setOnClickListener(this);
+
 		updateView();
 		return view;
 	}
@@ -100,15 +110,19 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		String userName = SteamService.singleton.username;
 		String avatar = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("avatar_" + userName, "null");
 
+
 		setTitle(name);
 		nameView.setText(name);
 		statusSpinner.setSelection(stateToIndex(state));
 
+		avatarView.setImageResource(R.drawable.default_avatar);
+		Log.i("AvatarView", avatar);
 		//FragmentMe profile icon.
 		if (!avatar.equals("null") || !avatar.contains(""))
 		{
-			Picasso.with(getContext())
+			Picasso.get()
 					.load(avatar)
+					.error(R.drawable.default_avatar)
 					.into(avatarView);
 		}
 
@@ -141,8 +155,7 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 	}
 
 	@Override
-	public void onNothingSelected(AdapterView<?> adapterView) {
-
+	public void onNothingSelected(AdapterView<?> parent) {
 	}
 
 	@Override
@@ -173,12 +186,12 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 					}
 				}
 			});
-			alert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {}
+			alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+				}
 			});
 			alert.show();
 		}
-
 		if (v == buttonTwoFactor) {
 			AccountLoginInfo info = AccountLoginInfo.readAccount(activity(), SteamService.singleton.username);
 			if (info == null || info.loginkey == null || info.loginkey.isEmpty()) {

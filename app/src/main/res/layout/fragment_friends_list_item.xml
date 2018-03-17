@@ -1,94 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/friends_list_item"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="?android:attr/selectableItemBackground"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:clickable="false">
+    android:id="@+id/friends_list_item"
+    android:layout_width="wrap_content"
+    android:layout_height="72dp">
 
-    <LinearLayout
-        android:id="@+id/friend_profiler"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:layout_weight="1"
-        android:gravity="start"
-        android:orientation="horizontal">
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/friend_avatar_left"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="12dp"
+        android:padding="4dp"
+        android:src="@drawable/default_avatar"
+        app:civ_border_color="@color/steam_offline"
+        app:civ_border_width="2dip" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/friend_avatar_left"
+    <RelativeLayout
+        android:id="@+id/friend_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/friend_avatar_left">
+
+        <TextView
+            android:id="@+id/friend_name"
+            android:layout_width="192dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+            android:textColor="#ffffffff"
+            tools:text="Name" />
+
+        <TextView
+            android:id="@+id/friend_status"
+            android:layout_width="192dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/friend_name"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+            android:textSize="14sp"
+            tools:text="Playing THE GAME" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/friend_info"
+        android:paddingEnd="16dp"
+        android:paddingStart="0dp">
+
+        <ImageButton
+            android:id="@+id/friend_chat_button"
             android:layout_width="40dip"
             android:layout_height="40dip"
-            android:layout_gravity="center"
-            android:layout_margin="12dp"
-            android:contentDescription="@string/steam_avatar"
-            android:src="@drawable/default_avatar"
-            app:civ_border_color="@color/steam_offline"
-            app:civ_border_width="2dip" />
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/chat"
+            android:src="@drawable/ic_comment" />
 
-        <LinearLayout
-            android:id="@+id/friend_bg"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp">
+        <ImageButton
+            android:id="@+id/friend_request_accept"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@id/friend_request_reject"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/friend_accept"
+            android:src="@drawable/ic_yes" />
 
-            <TextView
-                android:id="@+id/friend_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="#ffffffff"
-                android:textSize="16sp"
-                tools:text="Name"/>
+        <ImageButton
+            android:id="@+id/friend_request_reject"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/friend_request_ignore"
+            android:src="@drawable/ic_no" />
 
-            <TextView
-                android:id="@+id/friend_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small"
-                android:textSize="14sp"
-                tools:text="Status"/>
-        </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
-    <ImageButton
-        android:id="@+id/friend_chat_button"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_margin="8dip"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="@string/chat"
-        android:src="@drawable/ic_comment"/>
-
-    <ImageButton
-        android:id="@+id/friend_request_accept"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_margin="8dip"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="@string/friend_accept"
-        android:src="@drawable/ic_yes"
-        android:visibility="gone"/>
-
-    <ImageButton
-        android:id="@+id/friend_request_reject"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_margin="8dip"
-        android:background="?attr/selectableItemBackground"
-        android:contentDescription="@string/friend_request_ignore"
-        android:src="@drawable/ic_no"
-        android:visibility="gone"/>
-</LinearLayout>
+</RelativeLayout>

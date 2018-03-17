@@ -1,14 +1,21 @@
-package com.aegamesi.steamtrade.lib.android;
+package com.aegamesi.steamtrade.libs;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Base64;
+import android.view.View;
 
 import com.aegamesi.steamtrade.R;
 import com.google.gson.JsonDeserializationContext;
@@ -18,6 +25,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.squareup.picasso.Transformation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,11 +33,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
 
 public class AndroidUtil {
@@ -55,35 +61,6 @@ public class AndroidUtil {
 			assert clipboard != null;
 			clipboard.setText(str);
 		}
-	}
-
-	private static Date apkUpdateTime(
-			PackageManager packageManager, String packageName) {
-		try {
-			ApplicationInfo info = packageManager.getApplicationInfo(packageName, 0);
-			File apkFile = new File(info.sourceDir);
-			return apkFile.exists() ? new Date(apkFile.lastModified()) : null;
-		} catch (PackageManager.NameNotFoundException e) {
-			return null; // package not found
-		}
-	}
-
-	private static Date installTimeFromPackageManager(
-			PackageManager packageManager, String packageName) {
-		// API level 9 and above have the "firstInstallTime" field.
-		// Check for it with reflection and return if present.
-		try {
-			PackageInfo info = packageManager.getPackageInfo(packageName, 0);
-			Field field = PackageInfo.class.getField("firstInstallTime");
-			long timestamp = field.getLong(info);
-			return new Date(timestamp);
-		} catch (PackageManager.NameNotFoundException e) {
-			return null; // package not found
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		// field wasn't found
-		return null;
 	}
 
 	public static CharSequence getChatStyleTimeAgo(Context context, long time_then, long time_now) {
@@ -166,7 +143,10 @@ public class AndroidUtil {
 		AlertDialog.Builder alert = new AlertDialog.Builder(context);
 		alert.setTitle(title);
 		alert.setMessage(message);
-		alert.setNeutralButton(R.string.ok, callback);
+		alert.setNeutralButton(android.R.string.ok, callback);
+		alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+					}});
 		alert.show();
 	}
 
@@ -179,6 +159,63 @@ public class AndroidUtil {
 
 		public JsonElement serialize(byte[] src, Type typeOfSrc, JsonSerializationContext context) {
 			return new JsonPrimitive(Base64.encodeToString(src, Base64.NO_WRAP));
+		}
+	}
+
+	//UI based functions, below.
+
+	//RecyclerView spacer.
+	@SuppressWarnings("SameParameterValue")
+	public static class RecyclerViewSpacer extends RecyclerView.ItemDecoration {
+
+		final int spacing;
+		public RecyclerViewSpacer(int i) {
+			this.spacing = i;
+		}
+
+		public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state){
+
+			if( outRect != null && parent != null) {
+				int position = parent.getChildAdapterPosition(view);
+				outRect.left = spacing;
+				outRect.right = spacing;
+				outRect.bottom = spacing;
+				if (position < 1) {
+					outRect.top = spacing;
+				}
+			}
+		}
+	}
+
+	//Create a circled bitmap.
+	public static class CircleTransform implements Transformation {
+		@Override
+		public Bitmap transform(Bitmap source) {
+			final Bitmap output = Bitmap.createBitmap(source.getWidth(),
+					source.getHeight(), Bitmap.Config.ARGB_8888);
+			final Canvas canvas = new Canvas(output);
+
+			final int color = Color.RED;
+			final Paint paint = new Paint();
+			final Rect rect = new Rect(0, 0, source.getWidth(), source.getHeight());
+			final RectF rectF = new RectF(rect);
+
+			paint.setAntiAlias(true);
+			canvas.drawARGB(0, 0, 0, 0);
+			paint.setColor(color);
+			canvas.drawOval(rectF, paint);
+
+			paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+			canvas.drawBitmap(source, rect, rect, paint);
+
+			source.recycle();
+
+			return output;
+		}
+
+		@Override
+		public String key() {
+			return "circle";
 		}
 	}
 

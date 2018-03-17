@@ -4,5 +4,5 @@
 
     <item
         android:id="@+id/menu_library_store_page"
-        android:title="@string/library_view_store_page"/>
+        android:title="@string/menu_library_view_store_page"/>
 </menu>

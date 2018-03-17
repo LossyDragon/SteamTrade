@@ -8,12 +8,6 @@
         android:summary="@string/pref_reconnect_summ"
         android:title="@string/pref_reconnect"/>
 
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="pref_force_reconnect"
-        android:summary="@string/pref_force_reconnect_summ"
-        android:title="@string/pref_force_reconnect"/>
-
     <PreferenceScreen
         android:title="@string/pref_notification">
 
@@ -71,20 +65,19 @@
         android:title="@string/pref_hide_blocked_users"
         />
 
-
     <PreferenceCategory
         android:title="Advanced (Know what you're doing!)">
-            <EditTextPreference
-                android:defaultValue="@string/empty"
-                android:dialogTitle="@string/pref_machineauth_prompt"
-                android:key="pref_machineauth"
-                android:title="@string/pref_machineauth"/>
+        <EditTextPreference
+            android:defaultValue="@string/empty"
+            android:dialogTitle="@string/pref_machineauth_prompt"
+            android:key="pref_machineauth"
+            android:title="@string/pref_machineauth"/>
 
-            <EditTextPreference
-                android:dialogTitle="@string/pref_webapikey_prompt"
-                android:key="pref_webapikey"
-                android:persistent="false"
-                android:summary="@string/pref_webapikey_summary"
-                android:title="@string/pref_webapikey"/>
+        <EditTextPreference
+            android:dialogTitle="@string/pref_webapikey_prompt"
+            android:key="pref_webapikey"
+            android:persistent="false"
+            android:summary="@string/pref_webapikey_summary"
+            android:title="@string/pref_webapikey"/>
     </PreferenceCategory>
 </PreferenceScreen>

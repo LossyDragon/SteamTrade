@@ -7,9 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -20,12 +24,16 @@ import android.util.LongSparseArray;
 
 import com.aegamesi.steamtrade.MainActivity;
 import com.aegamesi.steamtrade.R;
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.steam.DBHelper.ChatEntry;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EChatEntryType;
@@ -34,20 +42,19 @@ import uk.co.thomasc.steamkit.types.steamid.SteamID;
 
 public class SteamChatManager {
     public static int CHAT_TYPE_CHAT = 0;
-    @SuppressWarnings("WeakerAccess")
-    public static int CHAT_TYPE_TRADE = 1;
+    static int CHAT_TYPE_TRADE = 1;
     private static final int NOTIFICATION_ID = 49717;
 
     public Set<SteamID> unreadMessages;
     public List<ChatReceiver> receivers;
+    private Target target;
 
-    @SuppressWarnings("WeakerAccess")
-    public SteamChatManager() {
+    SteamChatManager() {
         unreadMessages = new HashSet<>();
         receivers = new ArrayList<>();
     }
 
-     void receiveMessage(SteamID from, String message, long time) {
+    void receiveMessage(SteamID from, String message, long time) {
         broadcastMessage(
                 time,
                 SteamService.singleton.steamClient.getSteamId(),
@@ -58,7 +65,7 @@ public class SteamChatManager {
         );
     }
 
-     void broadcastMessage(long time, SteamID id_us, SteamID id_them, boolean sent_by_us, int type, String message) {
+    void broadcastMessage(long time, SteamID id_us, SteamID id_them, boolean sent_by_us, int type, String message) {
         // first, log this.
         DBHelper.ChatEntry.insert(
                 SteamService.singleton.db(),
@@ -109,16 +116,18 @@ public class SteamChatManager {
         if (steamFriends == null)
             return;
 
-        // basics for the notification
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(SteamService.singleton, Integer.toString(NOTIFICATION_ID)).setSmallIcon(R.drawable.ic_notify_msg);
+        //basics for the notification
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(SteamService.singleton, Integer.toString(NOTIFICATION_ID))
+                .setSmallIcon(R.drawable.ic_notify_msg);
+
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
         builder.setVisibility(NotificationCompat.VISIBILITY_PRIVATE);
-        //builder.setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND);
         builder.setLights(0xFFAEDEDC, 1250, 1000);
         builder.setVibrate(prefs.getBoolean("pref_vibrate", true) ? new long[]{0, 500, 150, 500} : new long[]{0});
         builder.setSound(Uri.parse(prefs.getString("pref_notification_sound", "DEFAULT_SOUND")));
-        builder.setOnlyAlertOnce(true);
+        builder.setOnlyAlertOnce(false);
         builder.setLocalOnly(true);
+
 
         // let's grab the last lines of our messages
         StringBuilder whereStatement = new StringBuilder();
@@ -152,17 +161,60 @@ public class SteamChatManager {
         }
         cursor.close();
 
-        // content of the notifications
+        /* Contents of Chat Notifications */
+
+        // One Person.
         if (unreadMessages.size() == 1) {
-            // just one person
             SteamID entry = unreadMessages.iterator().next();
             String friendName = steamFriends.getFriendPersonaName(entry);
             String lastLine = recentMessages.get(entry.convertToLong());
             builder.setContentTitle(friendName);
             builder.setContentText(lastLine);
 
+            // start of interactive Notifications
+            String imgHash = SteamUtil.bytesToHex(steamFriends.getFriendAvatar(entry)).toLowerCase(Locale.US);
+            String avatarURL = "";
+            if (!imgHash.equals("0000000000000000000000000000000000000000") && imgHash.length() == 40) {
+                avatarURL = "http://media.steampowered.com/steamcommunity/public/images/avatars/" + imgHash.substring(0, 2) + "/" + imgHash + "_full.jpg";
+            }
 
-        } else {
+            // Picasso's crappy Target, which still manages to ignore "strong referencing" making
+            //      onPrepareLoad called first.
+            target = new Target() {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        builder.setLargeIcon(bitmap);
+                }
+
+                @Override
+                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                }
+            };
+
+
+            // Add friend's avatar to notification shade.
+            Handler uiHandler = new Handler(Looper.getMainLooper());
+            final String finalAvatarURL = avatarURL;
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Picasso.get()
+                            .load(finalAvatarURL)
+                            .transform(new AndroidUtil.CircleTransform())
+                            .into(target);
+                }
+            });
+
+
+            //TODO inline replies...
+
+        } else { // 2 or more people.
+            //TODO: bundle them on each other. (No Inline replies?)
             // more than one person
             Iterator<SteamID> i = unreadMessages.iterator();
             NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
@@ -184,9 +236,10 @@ public class SteamChatManager {
             builder.setStyle(style);
         }
 
-        // and the intent
+        // and the intent of the notifications.
         long notificationSteamID = unreadMessages.size() == 1 ? unreadMessages.iterator().next().convertToLong() : 0;
         Bundle fragmentArguments = new Bundle();
+
         fragmentArguments.putLong("steamId", notificationSteamID);
 
         Intent intent = new Intent(SteamService.singleton, MainActivity.class);
@@ -205,6 +258,7 @@ public class SteamChatManager {
 
     //New notification methods, replaces Html.fromHtml();
     private final StyleSpan mBoldSpan = new StyleSpan(Typeface.BOLD);
+
     private SpannableString makeNotificationLine(String title, String text) {
         final SpannableString spannableString;
         if (title != null && title.length() > 0) {

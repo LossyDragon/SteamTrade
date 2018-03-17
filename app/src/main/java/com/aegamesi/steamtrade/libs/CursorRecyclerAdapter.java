@@ -1,5 +1,6 @@
-package com.aegamesi.steamtrade.lib.android;
-/* https://gist.github.com/quanturium/46541c81aae2a916e31d
+package com.aegamesi.steamtrade.libs;
+
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 ARNAUD FRUGIER
@@ -24,6 +25,7 @@ package com.aegamesi.steamtrade.lib.android;
  */
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 
 public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
@@ -45,7 +47,7 @@ public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> 
 	}
 
 	@Override
-	public final void onBindViewHolder (VH holder, int position) {
+	public final void onBindViewHolder (@NonNull VH holder, int position) {
 		if (!mDataValid) {
 			throw new IllegalStateException("this should only be called when the cursor is valid");
 		}
@@ -122,4 +124,5 @@ public abstract class CursorRecyclerAdapter<VH extends RecyclerView.ViewHolder> 
 		}
 		return oldCursor;
 	}
+
 }

@@ -46,7 +46,7 @@
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:layout_margin="8dp"
-                        android:contentDescription="@string/steam_avatar"
+                        android:contentDescription="@string/DESC_steam_avatar"
                         android:padding="2dip"
                         android:src="@drawable/default_avatar"
                         app:civ_border_color="@color/steam_online"

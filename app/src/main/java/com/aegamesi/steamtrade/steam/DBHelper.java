@@ -26,7 +26,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 	// predefined sql query
 	private static final String SQL_CREATE_ENTRIES =
-			"CREATE TABLE " + ChatEntry.TABLE + "(" + //
+			"CREATE TABLE " + ChatEntry.TABLE + " (" + //
 					ChatEntry._ID + " INTEGER PRIMARY KEY," +
 					ChatEntry.COLUMN_TIME + " INTEGER," +
 					ChatEntry.COLUMN_OUR_ID + " INTEGER," +
@@ -34,7 +34,7 @@ public class DBHelper extends SQLiteOpenHelper {
 					ChatEntry.COLUMN_SENDER + " INTEGER," +
 					ChatEntry.COLUMN_TYPE + " INTEGER," +
 					ChatEntry.COLUMN_MESSAGE + " TEXT" +
-					")";
+					" )";
 
 	DBHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -44,7 +44,8 @@ public class DBHelper extends SQLiteOpenHelper {
 		db.execSQL(SQL_CREATE_ENTRIES);
 
 		// if we have data from the previous version of the app, load it here
-		// load chat data
+		// load chat data.
+		// Ignore redundant character escape in chatPattern. [Android Lint]
 		Pattern chatPattern = Pattern.compile("([t|c])\\[([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})\\] (You|Them): (.*)");
 		Matcher chatMatcher = chatPattern.matcher("");
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);

@@ -3,6 +3,7 @@ package com.aegamesi.steamtrade.fragments;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -16,7 +17,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.fragments.support.LibraryAdapter;
+import com.aegamesi.steamtrade.fragments.adapters.LibraryAdapter;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
 import com.aegamesi.steamtrade.steam.SteamWeb;
@@ -27,6 +28,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class FragmentLibrary extends FragmentBase implements View.OnClickListener {
 	public LibraryAdapter adapterLibrary;
@@ -57,7 +59,7 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		inflater = activity().getLayoutInflater();
 		View view = inflater.inflate(R.layout.fragment_library, container, false);
 
@@ -120,13 +122,11 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 				if (adapterLibrary != null && adapterLibrary.currentSort != LibraryAdapter.SORT_PLAYTIME)
 					adapterLibrary.setGames(games, LibraryAdapter.SORT_PLAYTIME);
 				return true;
-
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 	}
 
-	@SuppressLint("DefaultLocale")
 	@Override
 	public void onClick(View view) {
 		if (view.getId() == R.id.game_card) {
@@ -139,7 +139,7 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 				public boolean onMenuItemClick(MenuItem item) {
 					switch (item.getItemId()) {
 						case R.id.menu_library_store_page:
-							String url = String.format("http://store.steampowered.com/app/%d/", appid);
+							String url = String.format(Locale.US, "http://store.steampowered.com/app/%d/", appid);
 							FragmentWeb.openPage(activity(), url, true);
 							break;
 					}
@@ -150,10 +150,10 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 			popup.show();
 		}
 	}
-	@SuppressLint("DefaultLocale")
+
 	private List<LibraryEntry> fetchLibrary() {
 		String webapi_url = "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&format=json&steamid=%d&include_appinfo=1&include_played_free_games=1";
-		webapi_url = String.format(webapi_url, SteamUtil.webApiKey, steamID);
+		webapi_url = String.format(Locale.US, webapi_url, SteamUtil.webApiKey, steamID);
 		String response = SteamWeb.fetch(webapi_url, "GET", null, "");
 
 		try {
@@ -177,11 +177,11 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 		public String name;
 		public double playtime_2weeks;
 		public double playtime_forever;
-		public String img_icon_url;
+		String img_icon_url;
 		public String img_logo_url;
-		public boolean has_community_visible_stats;
+		boolean has_community_visible_stats;
 
-		private LibraryEntry(JSONObject json) {
+		LibraryEntry(JSONObject json) {
 			appid = json.optInt("appid", 0);
 			name = json.optString("name", "Unknown");
 			playtime_2weeks = ((double) json.optInt("playtime_2weeks", 0)) / 60.0;

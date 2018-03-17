@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="?actionBarSize">
+
+    <LinearLayout
+        android:id="@+id/toolbar_icon_LL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal"
+        android:paddingEnd="4dip"
+        android:paddingStart="0dip"
+        android:visibility="visible">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/toolbar_icon"
+            android:layout_width="40.0dip"
+            android:layout_height="40.0dip"
+            android:contentDescription="@string/DESC_steam_avatar"
+            android:src="@drawable/default_avatar"
+            app:civ_border_color="@color/steam_online"
+            app:civ_border_width="2dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/toolbar_icon_LL"
+        android:orientation="vertical"
+        android:paddingBottom="2.0dip"
+        android:paddingEnd="0.0dip"
+        android:paddingStart="0.0dip"
+        android:paddingTop="0.0dip">
+
+        <TextView
+            android:id="@+id/toolbar_status"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="2dp"
+            android:layout_weight="0.6"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:hint="Activity Status"
+            android:maxLines="1"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <!-- Steam broke how games are pared for names,
+             possible feature when fixed.
+         <TextView
+            android:id="@+id/toolbar_game_status"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginStart="6dp"
+            android:layout_weight="0.4"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="activity subtext"
+            android:textSize="12sp"/>-->
+
+    </LinearLayout>
+</RelativeLayout>

@@ -3,10 +3,9 @@ package com.aegamesi.steamtrade.steam;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.util.Base64;
 
-import com.aegamesi.steamtrade.lib.android.AndroidUtil;
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -18,6 +17,7 @@ import java.util.List;
 
 import uk.co.thomasc.steamkit.types.steamid.SteamID;
 
+@SuppressWarnings("CanBeFinal")
 public class AccountLoginInfo {
 	private static final String pref_key = "accountinfo_";
 	private static Gson gson;
@@ -33,7 +33,7 @@ public class AccountLoginInfo {
 	public String password;
 	public String loginkey;
 	public String avatar;
-	public int unique_id = -1;
+	int unique_id = -1;
 
 	public boolean has_authenticator = false;
 	public byte[] tfa_sharedSecret;
@@ -50,10 +50,9 @@ public class AccountLoginInfo {
 		return PreferenceManager.getDefaultSharedPreferences(context);
 	}
 
-	@Nullable
 	public static AccountLoginInfo readAccount(Context context, String name) {
 		String json = getSharedPreferences(context).getString(pref_key + name, null);
-		//Log.d("AccountLoginInfo_READ", json);
+
 		if (json == null)
 			return null;
 

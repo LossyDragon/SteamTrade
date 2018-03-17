@@ -3,6 +3,7 @@ package com.aegamesi.steamtrade.fragments;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,7 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.fragments.support.FriendsListAdapter;
+import com.aegamesi.steamtrade.fragments.adapters.FriendsListAdapter;
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.steam.SteamChatManager;
 import com.aegamesi.steamtrade.steam.SteamChatManager.ChatReceiver;
 import com.aegamesi.steamtrade.steam.SteamService;
@@ -44,8 +46,7 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		if (abort)
-			return;
+		if (abort) { return; }
 
 		setHasOptionsMenu(true);
 	}
@@ -91,7 +92,7 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		inflater = activity().getLayoutInflater();
 		View view = inflater.inflate(R.layout.fragment_friends, container, false);
 
@@ -99,18 +100,13 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 		recyclerView = view.findViewById(R.id.friends_list);
 		recyclerView.setHasFixedSize(true);
 		recyclerView.setLayoutManager(new LinearLayoutManager(activity()));
+		recyclerView.addItemDecoration(new AndroidUtil.RecyclerViewSpacer(12));
 
 		boolean hideBlockedUsers = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_hide_blocked_users", true);
 		adapter = new FriendsListAdapter(this, null, true, hideBlockedUsers);
 		recyclerView.setAdapter(adapter);
 
 		return view;
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-		setTitle(getString(R.string.friends));
 	}
 
 	@Override
@@ -128,35 +124,38 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 		searchView.setOnQueryTextListener(this);
 	}
 
-	@Override //FriendsList onOptions, show an Alert Dialog to add a friend.
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if(item.getItemId() == R.id.menu_friends_add_friend) {
-			AlertDialog.Builder alert = new AlertDialog.Builder(activity());
-			alert.setTitle(R.string.friend_add);
-			alert.setMessage(R.string.friend_add_prompt);
-			final EditText input = new EditText(activity());
-			input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-			alert.setView(input);
-			alert.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					try {
-						long value = Long.parseLong(input.getText().toString());
-						activity().steamFriends.addFriend(new SteamID(value));
-					} catch (NumberFormatException e) {
-						activity().steamFriends.addFriend(input.getText().toString());
+		switch (item.getItemId()) {
+			case R.id.menu_friends_add_friend:
+				AlertDialog.Builder alert = new AlertDialog.Builder(activity());
+				alert.setTitle(R.string.friend_add);
+				alert.setMessage(R.string.friend_add_prompt);
+				final EditText input = new EditText(activity());
+				input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+				alert.setView(input);
+				alert.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						try {
+							long value = Long.parseLong(input.getText().toString());
+							activity().steamFriends.addFriend(new SteamID(value));
+						} catch (NumberFormatException e) {
+							activity().steamFriends.addFriend(input.getText().toString());
+						}
 					}
-				}
-			});
-			alert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-				}
-			});
-			AlertDialog dialog = alert.show();
-			TextView messageView = dialog.findViewById(android.R.id.message);
-			if (messageView != null)
-				messageView.setGravity(Gravity.CENTER);
+				});
+				alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+					}
+				});
+				AlertDialog dialog = alert.show();
+				TextView messageView = dialog.findViewById(android.R.id.message);
+				if (messageView != null)
+					messageView.setGravity(Gravity.CENTER);
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
 		}
-		return true;
 	}
 
 	@Override
@@ -183,9 +182,7 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 			// ignored friend request
 			Toast.makeText(activity(), R.string.friend_request_ignore, Toast.LENGTH_SHORT).show();
 		}
-
-		//TODO: Seperate R.id.friends_list_item and R.id.friend_chat_button. OVERLAP.
-		if (v.getId() == R.id.friend_profiler) {
+		if (v.getId() == R.id.friends_list_item) {
 			SteamID id = (SteamID) v.getTag();
 			Fragment fragment = new FragmentProfile();
 			Bundle bundle = new Bundle();

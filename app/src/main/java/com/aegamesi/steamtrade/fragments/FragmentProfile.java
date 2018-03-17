@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -18,8 +19,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.aegamesi.steamtrade.libs.PicassoImageGetter;
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.lib.android.PicassoImageGetter;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
 import com.aegamesi.steamtrade.steam.SteamWeb;
@@ -138,7 +139,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		inflater = activity().getLayoutInflater();
 		View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
@@ -176,10 +177,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 	@Override
 	public void onStart() {
 		super.onStart();
-
 		requestInfo();
-		// fetch the data
-		//(new ProfileFetchTask()).execute();
 	}
 
 	public void updateView() {
@@ -222,10 +220,8 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		setTitle(name);
 		nameView.setText(name);
 
-		//Profile loader for friend/user.
-		//avatarView.setImageResource(R.drawable.default_avatar);
 		if (avatar != null && avatar.length() == 40 && !avatar.equals("0000000000000000000000000000000000000000")) {
-			Picasso.with(getContext())
+			Picasso.get()
 					.load("http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg")
 					.into(avatarView);
 		}
@@ -297,14 +293,14 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 			AlertDialog.Builder builder = new AlertDialog.Builder(activity());
 			builder.setMessage(String.format(getString(R.string.friend_remove_message), activity().steamFriends.getFriendPersonaName(id)));
 			builder.setTitle(R.string.friend_remove);
-			builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+			builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 					activity().steamFriends.removeFriend(FragmentProfile.this.id);
 					Toast.makeText(activity(), String.format(getString(R.string.friend_removed), activity().steamFriends.getFriendPersonaName(FragmentProfile.this.id)), Toast.LENGTH_LONG).show();
 					activity().browseToFragment(new FragmentFriends(), true);
 				}
 			});
-			builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+			builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int id) {
 				}
 			});

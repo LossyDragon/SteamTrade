@@ -1,10 +1,8 @@
 package com.aegamesi.steamtrade;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.multidex.MultiDex;
 
 import com.aegamesi.steamtrade.steam.SteamLogcatDebugListener;
 
@@ -18,8 +16,6 @@ public class SteamTrade extends Application {
 
 	@Override
 	public void onCreate() {
-		FixNoClassDefFoundError81083(); // code workaround for GPG bug #81083 -- remove later
-
 		super.onCreate();
 		filesDir = getFilesDir();
 
@@ -33,17 +29,4 @@ public class SteamTrade extends Application {
 				CMClient.updateCMServers(servers);
 		}
 	}
-
-	private void FixNoClassDefFoundError81083() {
-		try {
-			Class.forName("android.os.AsyncTask");
-		} catch (Throwable ignore) {
-		}
-	}
-
-	protected void attachBaseContext(Context base) {
-		super.attachBaseContext(base);
-		MultiDex.install(this);
-	}
-
 }
