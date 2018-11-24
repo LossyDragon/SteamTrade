@@ -93,9 +93,8 @@ public class DBHelper extends SQLiteOpenHelper {
 		// adapted from http://blog.adamsbros.org/2012/02/28/upgrade-android-sqlite-database/
 		int upgradeTo = oldVersion + 1;
 		while (upgradeTo <= newVersion) {
-			switch (upgradeTo) {
-				case 1:
-					break;
+			if (upgradeTo == 1) {
+				break;
 			}
 			upgradeTo++;
 		}

@@ -120,27 +120,24 @@ public class SteamService extends Service {
         context.startService(intent);
 
 
-        new Thread(new Runnable() {
-			@Override
-			public void run() {
-				if (listener != null)
-					listener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_INITIALIZING);
+        new Thread(() -> {
+			if (listener != null)
+				listener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_INITIALIZING);
 
-				// busy-wait for the service to start...
-				while (SteamService.singleton == null) {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						if (listener != null) {
-							listener.onConnectionResult(EResult.Fail);
-							listener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_FAILURE);
-						}
+			// busy-wait for the service to start...
+			while (SteamService.singleton == null) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					if (listener != null) {
+						listener.onConnectionResult(EResult.Fail);
+						listener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_FAILURE);
 					}
 				}
-
-				SteamService.singleton.processLogon(listener);
 			}
+
+			SteamService.singleton.processLogon(listener);
 		}).start();
 	}
 
@@ -683,54 +680,52 @@ public class SteamService extends Service {
 		// aes encrypt the loginkey with our session key
 		final byte[] cryptedLoginKey = CryptoHelper.SymmetricEncrypt(loginKey, sessionKey);
 
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				int tries = 3;
-				while (true) {
-					try {
-						Log.i("Steam", "Sending auth request...");
-						KeyValue authResult = userAuth.authenticateUser(String.valueOf(steamClient.getSteamId().convertToLong()), WebHelpers.UrlEncode(cryptedSessionKey), WebHelpers.UrlEncode(cryptedLoginKey), "POST", "true");
-						token = authResult.get("token").asString();
-						tokenSecure = authResult.get("tokensecure").asString();
-						Log.i("Steam", "Successfully authenticated: " + token + " secure: " + tokenSecure);
+		new Thread(() -> {
+			int tries = 3;
+			while (true) {
+				try {
+					Log.i("Steam", "Sending auth request...");
+					KeyValue authResult = userAuth.authenticateUser(String.valueOf(steamClient.getSteamId().convertToLong()), WebHelpers.UrlEncode(cryptedSessionKey), WebHelpers.UrlEncode(cryptedLoginKey), "POST", "true");
+					token = authResult.get("token").asString();
+					tokenSecure = authResult.get("tokensecure").asString();
+					Log.i("Steam", "Successfully authenticated: " + token + " secure: " + tokenSecure);
 
 
-						// tell our listener and start fetching the webapi key
-						if (connectionListener != null)
-							connectionListener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_APIKEY);
-						buildNotification(SteamConnectionListener.STATUS_APIKEY, true);
+					// tell our listener and start fetching the webapi key
+					if (connectionListener != null)
+						connectionListener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_APIKEY);
+					buildNotification(SteamConnectionListener.STATUS_APIKEY, true);
 
-						fetchAPIKey();
+					fetchAPIKey();
 
-						// now we're done! tell our listener
-						if (connectionListener != null) {
-							connectionListener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_CONNECTED);
-							connectionListener.onConnectionResult(EResult.OK);
-						}
-						buildNotification(SteamConnectionListener.STATUS_CONNECTED, true);
-
-						finalizeConnection();
-
-						break;
-					} catch (final Exception e) {
-						if (--tries == 0) {
-							Log.e("Steam", "FATAL(ish): Unable to authenticate with SteamWeb. Tried several times");
-							if (connectionListener != null) {
-								connectionListener.onConnectionResult(EResult.ServiceUnavailable);
-								connectionListener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_FAILURE);
-							}
-							buildNotification(SteamConnectionListener.STATUS_FAILURE, true);
-							attemptReconnect = false;
-							break;
-						}
-						Log.e("Steam", "Error authenticating! Retrying...");
+					// now we're done! tell our listener
+					if (connectionListener != null) {
+						connectionListener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_CONNECTED);
+						connectionListener.onConnectionResult(EResult.OK);
 					}
+					buildNotification(SteamConnectionListener.STATUS_CONNECTED, true);
+
+					finalizeConnection();
+
+					break;
+				} catch (final Exception e) {
+					if (--tries == 0) {
+						Log.e("Steam", "FATAL(ish): Unable to authenticate with SteamWeb. Tried several times");
+						if (connectionListener != null) {
+							connectionListener.onConnectionResult(EResult.ServiceUnavailable);
+							connectionListener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_FAILURE);
+						}
+						buildNotification(SteamConnectionListener.STATUS_FAILURE, true);
+						attemptReconnect = false;
+						break;
+					}
+					Log.e("Steam", "Error authenticating! Retrying...");
 				}
 			}
 		}).start();
 	}
 
+	//TODO, if you change your password, your saved apikey does not work. Especially when imported through .maFile.
 	private void fetchAPIKey() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SteamService.this);
 		String apikey = prefs.getString("webapikey_" + steamClient.getSteamId().convertToLong(), "");
@@ -779,12 +774,7 @@ public class SteamService extends Service {
 				handleSteamMessage(msg);
 				if (messageHandler != null) {
 					// gotta run this on the ui thread
-					handler.post(new Runnable() {
-						@Override
-						public void run() {
-							messageHandler.handleSteamMessage(msg);
-						}
-					});
+					handler.post(() -> messageHandler.handleSteamMessage(msg));
 				}
 			}
 		}

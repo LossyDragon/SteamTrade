@@ -1,7 +1,6 @@
 package com.aegamesi.steamtrade.fragments;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,12 +18,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.views.SteamGuardCodeView;
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.steam.AccountLoginInfo;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamTwoFactor;
+import com.aegamesi.steamtrade.views.SteamGuardCodeView;
 
 import org.json.JSONException;
 
@@ -101,13 +100,11 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 						final EditText input = new EditText(activity());
 						input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 						alert.setView(input);
-						alert.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int whichButton) {
-								authenticator_finalize_code = input.getText().toString().trim();
-								authenticator_finalize_attempts = 30;
-								authenticator_finalize_time = SteamTwoFactor.getCurrentTime();
-								finalizeAuthenticator();
-							}
+						alert.setPositiveButton(R.string.add, (dialog, whichButton) -> {
+							authenticator_finalize_code = input.getText().toString().trim();
+							authenticator_finalize_attempts = 30;
+							authenticator_finalize_time = SteamTwoFactor.getCurrentTime();
+							finalizeAuthenticator();
 						});
 						alert.setNegativeButton(android.R.string.cancel, null);
 						alert.show();

@@ -1,6 +1,5 @@
 package com.aegamesi.steamtrade.fragments;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -177,18 +176,14 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 			input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 			input.setText(activity().steamFriends.getPersonaName());
 			alert.setView(input);
-			alert.setPositiveButton(R.string.change, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					String name = input.getText().toString().trim();
-					if (name.length() != 0) {
-						activity().steamFriends.setPersonaName(name);
-						updateView();
-					}
+			alert.setPositiveButton(R.string.change, (dialog, whichButton) -> {
+				String name = input.getText().toString().trim();
+				if (name.length() != 0) {
+					activity().steamFriends.setPersonaName(name);
+					updateView();
 				}
 			});
-			alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-				}
+			alert.setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> {
 			});
 			alert.show();
 		}

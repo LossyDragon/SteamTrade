@@ -134,17 +134,12 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 			final int appid = entry.appid;
 
 			PopupMenu popup = new PopupMenu(activity(), view);
-			popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-				@Override
-				public boolean onMenuItemClick(MenuItem item) {
-					switch (item.getItemId()) {
-						case R.id.menu_library_store_page:
-							String url = String.format(Locale.US, "http://store.steampowered.com/app/%d/", appid);
-							FragmentWeb.openPage(activity(), url, true);
-							break;
-					}
-					return true;
+			popup.setOnMenuItemClickListener(item -> {
+				if (item.getItemId() == R.id.menu_library_store_page) {
+					String url = String.format(Locale.US, "http://store.steampowered.com/app/%d/", appid);
+					FragmentWeb.openPage(activity(), url, true);
 				}
+				return true;
 			});
 			popup.inflate(R.menu.fragment_library_action);
 			popup.show();

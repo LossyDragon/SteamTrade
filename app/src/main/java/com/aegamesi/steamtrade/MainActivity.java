@@ -2,7 +2,6 @@ package com.aegamesi.steamtrade;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -41,7 +40,6 @@ import com.aegamesi.steamtrade.fragments.FragmentFriends;
 import com.aegamesi.steamtrade.fragments.FragmentLibrary;
 import com.aegamesi.steamtrade.fragments.FragmentMe;
 import com.aegamesi.steamtrade.fragments.FragmentProfile;
-import com.aegamesi.steamtrade.fragments.FragmentSettings;
 import com.aegamesi.steamtrade.fragments.FragmentWeb;
 import com.aegamesi.steamtrade.steam.SteamMessageHandler;
 import com.aegamesi.steamtrade.steam.SteamService;
@@ -63,6 +61,8 @@ import uk.co.thomasc.steamkit.steam3.handlers.steamuser.SteamUser;
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg;
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback;
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT;
+
+//import com.aegamesi.steamtrade.fragments.FragmentSettings;
 
 public class MainActivity extends AppCompatActivity implements SteamMessageHandler, OnNavigationItemSelectedListener {
 	public MainActivity instance = null;
@@ -107,12 +107,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		if (SteamService.extras != null && SteamService.extras.getBoolean("alertSteamGuard", false)) {
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if (SteamService.extras != null)
-						SteamService.extras.putBoolean("alertSteamGuard", false);
-				}
+			builder.setNeutralButton(android.R.string.ok, (dialog, which) -> {
+				if (SteamService.extras != null)
+					SteamService.extras.putBoolean("alertSteamGuard", false);
 			});
 			builder.setMessage(R.string.steamguard_new);
 			builder.show();
@@ -160,12 +157,9 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			drawerStatus = drawerHeaderView.findViewById(R.id.drawer_status);
 			drawerNotifyCard = drawerHeaderView.findViewById(R.id.notify_card);
 			drawerNotifyText = drawerHeaderView.findViewById(R.id.notify_text);
-			drawerHeaderView.findViewById(R.id.drawer_profile).setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					unCheckAllMenuItems(navigationView.getMenu());
-					browseToFragment(new FragmentMe(), true);
-				}
+			drawerHeaderView.findViewById(R.id.drawer_profile).setOnClickListener(view -> {
+				unCheckAllMenuItems(navigationView.getMenu());
+				browseToFragment(new FragmentMe(), true);
 			});
 		}
 
@@ -347,13 +341,11 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case android.R.id.home:
-				toggleDrawer();
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
+		if (item.getItemId() == android.R.id.home) {
+			toggleDrawer();
+			return true;
 		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	public void toggleDrawer() {
@@ -381,11 +373,12 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			case R.id.nav_browser:
 				browseToFragment(new FragmentWeb(), true);
 				break;
-			case R.id.nav_settings:
-				//Settings doesn't utilize Fragmentbase, force title.
-				setTitle(R.string.nav_settings);
-				browseToFragment(new FragmentSettings(), true);
-				break;
+			//Preference fragment is out of date for API 28.
+			//case R.id.nav_settings:
+			//	//Settings doesn't utilize Fragmentbase, force title.
+			//	setTitle(R.string.nav_settings);
+			//	browseToFragment(new FragmentSettings(), true);
+			//	break;
 			case R.id.nav_about:
 				AboutDialog.newInstance().show(getSupportFragmentManager(), AboutDialog.TAG);
 				break;
@@ -443,6 +436,37 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			}
 		}
 		new SteamDisconnectTask().execute();
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
+		// fragments from intent
+		String fragmentName = getIntent().getStringExtra("fragment");
+		if (fragmentName != null) {
+			Class<? extends Fragment> fragmentClass = null;
+			try {
+				fragmentClass = (Class<? extends Fragment>) Class.forName(fragmentName);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+			if (fragmentClass != null) {
+				Fragment fragment = null;
+				try {
+					fragment = fragmentClass.newInstance();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				if (fragment != null) {
+					Bundle arguments = getIntent().getBundleExtra("arguments");
+					if (arguments != null)
+						fragment.setArguments(arguments);
+					browseToFragment(fragment, getIntent().getBooleanExtra("fragment_subfragment", true));
+				}
+			}
+		}
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package com.aegamesi.steamtrade;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -18,7 +17,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,13 +30,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aegamesi.steamtrade.dialogs.EulaDialog;
+import com.aegamesi.steamtrade.dialogs.SteamGuardDialog;
 import com.aegamesi.steamtrade.dialogs.mProgressDialog;
 import com.aegamesi.steamtrade.steam.AccountLoginInfo;
 import com.aegamesi.steamtrade.steam.SteamConnectionListener;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamTwoFactor;
 import com.aegamesi.steamtrade.steam.SteamUtil;
-import com.aegamesi.steamtrade.dialogs.SteamGuardDialog;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -47,7 +45,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -105,18 +102,15 @@ public class LoginActivity extends AppCompatActivity {
         Button importAccount = findViewById(R.id.btn_import_account);
 
         /* OnClickListener for switching between New and Saved Account sections */
-        OnClickListener cardListener = new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean isNew = view == headerNew;
-                boolean isSaved = view == headerSaved;
+        OnClickListener cardListener = view -> {
+            boolean isNew = view == headerNew;
+            boolean isSaved = view == headerSaved;
 
-                headerNew.setVisibility(isNew ? View.GONE : View.VISIBLE);
-                viewNew.setVisibility(isNew ? View.VISIBLE : View.GONE);
+            headerNew.setVisibility(isNew ? View.GONE : View.VISIBLE);
+            viewNew.setVisibility(isNew ? View.VISIBLE : View.GONE);
 
-                headerSaved.setVisibility(isSaved ? View.GONE : View.VISIBLE);
-                viewSaved.setVisibility(isSaved ? View.VISIBLE : View.GONE);
-            }
+            headerSaved.setVisibility(isSaved ? View.GONE : View.VISIBLE);
+            viewSaved.setVisibility(isSaved ? View.VISIBLE : View.GONE);
         };
 
         /* New & Saved button Click Listeners */
@@ -147,15 +141,12 @@ public class LoginActivity extends AppCompatActivity {
         Button buttonSignIn = findViewById(R.id.sign_in_button);
 
         /* Keyboard Stuff */
-        textPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
+        textPassword.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                attemptLogin();
+                return true;
             }
+            return false;
         });
 
         /* Show legacy information */
@@ -167,21 +158,11 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         /* Click Listener for signing in */
-        buttonSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        buttonSignIn.setOnClickListener(view -> attemptLogin());
 
 
         /* Click Listener for .maFile importing */
-        importAccount.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SteamTwoFactor.promptForMafile(LoginActivity.this, REQUEST_CODE_LOAD_MAFILE);
-            }
-        });
+        importAccount.setOnClickListener(view -> SteamTwoFactor.promptForMafile(LoginActivity.this, REQUEST_CODE_LOAD_MAFILE));
     }
 
     @Override
@@ -215,15 +196,12 @@ public class LoginActivity extends AppCompatActivity {
                         final EditText passwordInput = new EditText(this);
                         builder.setView(passwordInput);
                         passwordInput.setInputType(TYPE_CLASS_TEXT | TYPE_TEXT_VARIATION_PASSWORD);
-                        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                acc.password = passwordInput.getText().toString();
-                                acc.has_authenticator = true;
-                                AccountLoginInfo.writeAccount(LoginActivity.this, acc);
-                                Toast.makeText(LoginActivity.this, R.string.action_successful, Toast.LENGTH_LONG).show();
-                                recreate();
-                            }
+                        builder.setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                            acc.password = passwordInput.getText().toString();
+                            acc.has_authenticator = true;
+                            AccountLoginInfo.writeAccount(LoginActivity.this, acc);
+                            Toast.makeText(LoginActivity.this, R.string.action_successful, Toast.LENGTH_LONG).show();
+                            recreate();
                         });
                         builder.show();
                     }
@@ -402,69 +380,66 @@ public class LoginActivity extends AppCompatActivity {
         public void onConnectionResult(final EResult result) {
             Log.i("ConnectionListener", "Connection result: " + result);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!active)
-                        return;
+            runOnUiThread(() -> {
+                if (!active)
+                    return;
 
-                    if (progressDialog != null && progressDialog.isShowing())
-                        progressDialog.dismiss();
-                    progressDialog = null;
+                if (progressDialog != null && progressDialog.isShowing())
+                    progressDialog.dismiss();
+                progressDialog = null;
 
-                    if (!handle_result)
-                        return;
-                    handle_result = false;
+                if (!handle_result)
+                    return;
+                handle_result = false;
 
-                    if (result == EResult.InvalidPassword) {
-                        // maybe change error to "login key expired, log in again" if using loginkey
-                        if (SteamService.extras != null && SteamService.extras.getString("loginkey") != null) {
-                            Toast.makeText(LoginActivity.this, R.string.error_loginkey_expired, Toast.LENGTH_LONG).show();
-                            textPassword.setError(getString(R.string.error_loginkey_expired));
-
-                            String username = SteamService.extras.getString("username");
-                            showAndFillManualLogin(username);
-                        } else {
-                            textPassword.setError(getString(R.string.error_incorrect_password));
-                            textPassword.requestFocus();
-                        }
-                    } else if (result == EResult.ConnectFailed) {
-                        Toast.makeText(LoginActivity.this, R.string.cannot_connect_to_steam, Toast.LENGTH_SHORT).show();
-                    } else if (result == EResult.ServiceUnavailable) {
-                        Toast.makeText(LoginActivity.this, R.string.cannot_auth_with_steamweb, Toast.LENGTH_LONG).show();
-                    } else if (result == EResult.AccountLogonDenied || result == EResult.AccountLogonDeniedNoMail || result == EResult.AccountLogonDeniedVerifiedEmailRequired || result == EResult.AccountLoginDeniedNeedTwoFactor) {
-                        steamGuardField.setVisibility(View.VISIBLE);
-                        textSteamguard.setVisibility(View.VISIBLE);
-                        steamGuardField.setError(getString(R.string.error_steamguard_required));
-                        textSteamguard.requestFocus();
-                        Toast.makeText(LoginActivity.this, "SteamGuard: " + result.name(), Toast.LENGTH_LONG).show();
+                if (result == EResult.InvalidPassword) {
+                    // maybe change error to "login key expired, log in again" if using loginkey
+                    if (SteamService.extras != null && SteamService.extras.getString("loginkey") != null) {
+                        Toast.makeText(LoginActivity.this, R.string.error_loginkey_expired, Toast.LENGTH_LONG).show();
+                        textPassword.setError(getString(R.string.error_loginkey_expired));
 
                         String username = SteamService.extras.getString("username");
                         showAndFillManualLogin(username);
-
-                        need_twofactor = result == EResult.AccountLoginDeniedNeedTwoFactor;
-                    } else if (result == EResult.InvalidLoginAuthCode || result == EResult.TwoFactorCodeMismatch) {
-                        textSteamguard.setVisibility(View.VISIBLE);
-                        textSteamguard.setError(getString(R.string.error_incorrect_steamguard));
-                        textSteamguard.requestFocus();
-
-                        String username = SteamService.extras.getString("username");
-                        showAndFillManualLogin(username);
-
-                        need_twofactor = result == EResult.TwoFactorCodeMismatch;
-                    } else if (result != EResult.OK) {
-                        // who knows what this is. perhaps a bug report will reveal
-                        Toast.makeText(LoginActivity.this, "Cannot Login: " + result.toString(), Toast.LENGTH_LONG).show();
                     } else {
-                        if (SteamUtil.webApiKey.length() == 0) {
-                            Toast.makeText(LoginActivity.this, R.string.error_getting_key, Toast.LENGTH_LONG).show();
-                        }
-
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.putExtra("isLoggingIn", true);
-                        LoginActivity.this.startActivity(intent);
-                        finish();
+                        textPassword.setError(getString(R.string.error_incorrect_password));
+                        textPassword.requestFocus();
                     }
+                } else if (result == EResult.ConnectFailed) {
+                    Toast.makeText(LoginActivity.this, R.string.cannot_connect_to_steam, Toast.LENGTH_SHORT).show();
+                } else if (result == EResult.ServiceUnavailable) {
+                    Toast.makeText(LoginActivity.this, R.string.cannot_auth_with_steamweb, Toast.LENGTH_LONG).show();
+                } else if (result == EResult.AccountLogonDenied || result == EResult.AccountLogonDeniedNoMail || result == EResult.AccountLogonDeniedVerifiedEmailRequired || result == EResult.AccountLoginDeniedNeedTwoFactor) {
+                    steamGuardField.setVisibility(View.VISIBLE);
+                    textSteamguard.setVisibility(View.VISIBLE);
+                    steamGuardField.setError(getString(R.string.error_steamguard_required));
+                    textSteamguard.requestFocus();
+                    Toast.makeText(LoginActivity.this, "SteamGuard: " + result.name(), Toast.LENGTH_LONG).show();
+
+                    String username = SteamService.extras.getString("username");
+                    showAndFillManualLogin(username);
+
+                    need_twofactor = result == EResult.AccountLoginDeniedNeedTwoFactor;
+                } else if (result == EResult.InvalidLoginAuthCode || result == EResult.TwoFactorCodeMismatch) {
+                    textSteamguard.setVisibility(View.VISIBLE);
+                    textSteamguard.setError(getString(R.string.error_incorrect_steamguard));
+                    textSteamguard.requestFocus();
+
+                    String username = SteamService.extras.getString("username");
+                    showAndFillManualLogin(username);
+
+                    need_twofactor = result == EResult.TwoFactorCodeMismatch;
+                } else if (result != EResult.OK) {
+                    // who knows what this is. perhaps a bug report will reveal
+                    Toast.makeText(LoginActivity.this, "Cannot Login: " + result.toString(), Toast.LENGTH_LONG).show();
+                } else {
+                    if (SteamUtil.webApiKey.length() == 0) {
+                        Toast.makeText(LoginActivity.this, R.string.error_getting_key, Toast.LENGTH_LONG).show();
+                    }
+
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    intent.putExtra("isLoggingIn", true);
+                    LoginActivity.this.startActivity(intent);
+                    finish();
                 }
             });
         }
@@ -473,38 +448,32 @@ public class LoginActivity extends AppCompatActivity {
         public void onConnectionStatusUpdate(final int status) {
             Log.i("ConnectionListener", "Status update: " + status);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!active)
-                        return;
+            runOnUiThread(() -> {
+                if (!active)
+                    return;
 
-                    if (status != STATUS_CONNECTED && status != STATUS_FAILURE) {
-                        if (progressDialog == null || !progressDialog.isShowing()) {
-                            progressDialog = new mProgressDialog(LoginActivity.this);
-                            progressDialog.setCancelable(true);
-                            progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialog) {
-                                    if (SteamService.singleton != null) {
-                                        SteamService.singleton.kill();
-                                    }
-                                }
-                            });
-                            progressDialog.show();
-                        }
+                if (status != STATUS_CONNECTED && status != STATUS_FAILURE) {
+                    if (progressDialog == null || !progressDialog.isShowing()) {
+                        progressDialog = new mProgressDialog(LoginActivity.this);
+                        progressDialog.setCancelable(true);
+                        progressDialog.setOnCancelListener(dialog -> {
+                            if (SteamService.singleton != null) {
+                                SteamService.singleton.kill();
+                            }
+                        });
+                        progressDialog.show();
                     }
-
-                    String[] statuses = getResources().getStringArray(R.array.connection_status);
-                    if (progressDialog != null)
-                        progressDialog.setMessage(statuses[status]);
                 }
+
+                String[] statuses = getResources().getStringArray(R.array.connection_status);
+                if (progressDialog != null)
+                    progressDialog.setMessage(statuses[status]);
             });
         }
     }
 
     private class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.AccountViewHolder> {
-        List<AccountLoginInfo> accounts = new ArrayList<>();
+        List<AccountLoginInfo> accounts;
 
         AccountListAdapter() {
             accounts = AccountLoginInfo.getAccountList(LoginActivity.this);
@@ -570,13 +539,11 @@ public class LoginActivity extends AppCompatActivity {
                 if (view.getId() == R.id.account_delete) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
                     builder.setNegativeButton(android.R.string.cancel, null);
-                    builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            accounts.remove(getAdapterPosition());
-                            notifyItemRemoved(getAdapterPosition());
+                    builder.setPositiveButton(android.R.string.yes, (dialog, whichButton) -> {
+                        accounts.remove(getAdapterPosition());
+                        notifyItemRemoved(getAdapterPosition());
 
-                            AccountLoginInfo.removeAccount(LoginActivity.this, account.username);
-                        }
+                        AccountLoginInfo.removeAccount(LoginActivity.this, account.username);
                     });
                     builder.setMessage(String.format(getString(R.string.login_confirm_delete_account), account.username));
                     builder.show();

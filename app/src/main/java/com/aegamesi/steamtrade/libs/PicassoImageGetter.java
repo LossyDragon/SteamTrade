@@ -18,58 +18,58 @@ import com.squareup.picasso.Target;
 
 //ImageGetter for chat emoticons.
 public class PicassoImageGetter implements Html.ImageGetter {
-	private Context context;
-	private TextView textView;
+    private Context context;
+    private TextView textView;
     private float pixelsToDp;
 
-	public PicassoImageGetter(View t, Context context) {
-		this.context = context;
-		this.textView = (TextView) t;
+    public PicassoImageGetter(View t, Context context) {
+        this.context = context;
+        this.textView = (TextView) t;
 
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         pixelsToDp = ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
-	}
+    }
 
-	@Override
-	public Drawable getDrawable(String source) {
-		Log.i("PicassoImageGetter", "Loading: " + source);
+    @Override
+    public Drawable getDrawable(String source) {
+        Log.i("PicassoImageGetter", "Loading: " + source);
         int size = (int) (16.0f * pixelsToDp);
 
-		BitmapDrawablePlaceHolder drawable = new BitmapDrawablePlaceHolder();
+        BitmapDrawablePlaceHolder drawable = new BitmapDrawablePlaceHolder();
 
-		Picasso.get()
-				.load(source)
-				.resize(size, size)
-				.into(drawable);
+        Picasso.get()
+                .load(source)
+                .resize(size, size)
+                .into(drawable);
 
-		return drawable;
-	}
+        return drawable;
+    }
 
-	@SuppressWarnings("deprecation")
-	private class BitmapDrawablePlaceHolder extends BitmapDrawable implements Target {
-		protected Drawable drawable;
+    @SuppressWarnings("deprecation")
+    private class BitmapDrawablePlaceHolder extends BitmapDrawable implements Target {
+        protected Drawable drawable;
 
         @Override
-		public void draw(final Canvas canvas) {
-			if (drawable != null) {
-				drawable.draw(canvas);
-			}
-			else {
-			    super.draw(canvas);
+        public void draw(final Canvas canvas) {
+            if (drawable != null) {
+                drawable.draw(canvas);
             }
-		}
+            else {
+                super.draw(canvas);
+            }
+        }
 
-		@Override
-		public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-			setDrawable(new BitmapDrawable(context.getResources(), bitmap));
-		}
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            setDrawable(new BitmapDrawable(context.getResources(), bitmap));
+        }
 
-		@Override
-		public void onBitmapFailed(Exception e, Drawable errorDrawable) {}
+        @Override
+        public void onBitmapFailed(Exception e, Drawable errorDrawable) {}
 
-		@Override
-		public void onPrepareLoad(Drawable placeHolderDrawable) {}
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {}
 
         public void setDrawable(Drawable drawable) {
             this.drawable = drawable;
@@ -82,5 +82,5 @@ public class PicassoImageGetter implements Html.ImageGetter {
                 textView.setText(textView.getText());
             }
         }
-	}
+    }
 }

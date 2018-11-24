@@ -1,6 +1,5 @@
 package com.aegamesi.steamtrade.fragments;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -126,36 +125,30 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_friends_add_friend:
-				AlertDialog.Builder alert = new AlertDialog.Builder(activity());
-				alert.setTitle(R.string.friend_add);
-				alert.setMessage(R.string.friend_add_prompt);
-				final EditText input = new EditText(activity());
-				input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-				alert.setView(input);
-				alert.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						try {
-							long value = Long.parseLong(input.getText().toString());
-							activity().steamFriends.addFriend(new SteamID(value));
-						} catch (NumberFormatException e) {
-							activity().steamFriends.addFriend(input.getText().toString());
-						}
-					}
-				});
-				alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-					}
-				});
-				AlertDialog dialog = alert.show();
-				TextView messageView = dialog.findViewById(android.R.id.message);
-				if (messageView != null)
-					messageView.setGravity(Gravity.CENTER);
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
+		if (item.getItemId() == R.id.menu_friends_add_friend) {
+			AlertDialog.Builder alert = new AlertDialog.Builder(activity());
+			alert.setTitle(R.string.friend_add);
+			alert.setMessage(R.string.friend_add_prompt);
+			final EditText input = new EditText(activity());
+			input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+			alert.setView(input);
+			alert.setPositiveButton(R.string.add, (dialog, whichButton) -> {
+				try {
+					long value = Long.parseLong(input.getText().toString());
+					activity().steamFriends.addFriend(new SteamID(value));
+				} catch (NumberFormatException e) {
+					activity().steamFriends.addFriend(input.getText().toString());
+				}
+			});
+			alert.setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> {
+			});
+			AlertDialog dialog = alert.show();
+			TextView messageView = dialog.findViewById(android.R.id.message);
+			if (messageView != null)
+				messageView.setGravity(Gravity.CENTER);
+			return true;
 		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
@@ -196,16 +189,13 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 	public boolean receiveChatLine(long time, SteamID id_us, final SteamID id_them, boolean sent_by_us, int type, String message) {
 		if (activity() != null) {
 			if (!sent_by_us && type == SteamChatManager.CHAT_TYPE_CHAT) {
-				activity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (adapter != null) {
-							if (adapter.recentChats != null) {
-								adapter.recentChats.remove(id_them);
-								adapter.recentChats.add(0, id_them);
-							}
-							adapter.update(id_them);
+				activity().runOnUiThread(() -> {
+					if (adapter != null) {
+						if (adapter.recentChats != null) {
+							adapter.recentChats.remove(id_them);
+							adapter.recentChats.add(0, id_them);
 						}
+						adapter.update(id_them);
 					}
 				});
 			}

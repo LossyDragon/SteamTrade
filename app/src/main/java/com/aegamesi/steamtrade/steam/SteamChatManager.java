@@ -1,5 +1,6 @@
 package com.aegamesi.steamtrade.steam;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,8 +10,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,14 +28,15 @@ import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.steam.DBHelper.ChatEntry;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EChatEntryType;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends;
@@ -47,7 +49,10 @@ public class SteamChatManager {
 
     public Set<SteamID> unreadMessages;
     public List<ChatReceiver> receivers;
-    private Target target;
+
+    private Handler uiHandler = new Handler(Looper.getMainLooper());
+    private String finalAvatarURL = null;
+    private Bitmap bitmap;
 
     SteamChatManager() {
         unreadMessages = new HashSet<>();
@@ -91,6 +96,7 @@ public class SteamChatManager {
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     public void updateNotification() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SteamService.singleton);
         boolean enableNotification = prefs.getBoolean("pref_notification_chat", true);
@@ -178,44 +184,37 @@ public class SteamChatManager {
                 avatarURL = "http://media.steampowered.com/steamcommunity/public/images/avatars/" + imgHash.substring(0, 2) + "/" + imgHash + "_full.jpg";
             }
 
-            // Picasso's crappy Target, which still manages to ignore "strong referencing" making
-            //      onPrepareLoad called first.
-            target = new Target() {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        builder.setLargeIcon(bitmap);
-                }
-
-                @Override
-                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                }
-            };
-
-
             // Add friend's avatar to notification shade.
-            Handler uiHandler = new Handler(Looper.getMainLooper());
-            final String finalAvatarURL = avatarURL;
-            uiHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Picasso.get()
-                            .load(finalAvatarURL)
-                            .transform(new AndroidUtil.CircleTransform())
-                            .into(target);
+            finalAvatarURL = avatarURL;
+            uiHandler.post(() ->
+            {
+                try {
+                    bitmap = new AsyncTask<Void, Void, Bitmap>() {
+                        @Override
+                        protected Bitmap doInBackground(Void... params) {
+                            try {
+                                return Picasso.get()
+                                        .load(finalAvatarURL)
+                                        .error(R.drawable.default_avatar)
+                                        .transform(new AndroidUtil.CircleTransform())
+                                        .get();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            return null;
+                        }
+                    }.execute().get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
                 }
             });
 
+            builder.setLargeIcon(bitmap);
 
-            //TODO inline replies...
-
-        } else { // 2 or more people.
-            //TODO: bundle them on each other. (No Inline replies?)
-            // more than one person
+        } else {
+            // 2 or more people.
             Iterator<SteamID> i = unreadMessages.iterator();
             NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
             StringBuilder friendNames = new StringBuilder();

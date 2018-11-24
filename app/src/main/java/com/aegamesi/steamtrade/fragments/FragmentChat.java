@@ -18,12 +18,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.fragments.adapters.ChatAdapter;
@@ -218,30 +216,25 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 		chat_typing = view.findViewById(R.id.chat_typing);
 		chat_typing.setVisibility(View.GONE);
 
-		chatInput.setOnEditorActionListener(new OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (event == null)
-					return false;
-				if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-					String message;
-					if ((message = chatInput.getText().toString().trim()).length() == 0)
-						return false;
-					chatInput.setText("");
-					SteamService.singleton.chatManager.sendMessage(chatID, message);
-					return true;
-				}
+		chatInput.setOnEditorActionListener((v, actionId, event) -> {
+			if (event == null)
 				return false;
-			}
-		});
-		chatButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
+			if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
 				String message;
 				if ((message = chatInput.getText().toString().trim()).length() == 0)
-					return;
+					return false;
 				chatInput.setText("");
 				SteamService.singleton.chatManager.sendMessage(chatID, message);
+				return true;
 			}
+			return false;
+		});
+		chatButton.setOnClickListener(v -> {
+			String message;
+			if ((message = chatInput.getText().toString().trim()).length() == 0)
+				return;
+			chatInput.setText("");
+			SteamService.singleton.chatManager.sendMessage(chatID, message);
 		});
 
 		boolean isCompact = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_chat_compact", false);
@@ -325,17 +318,14 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 	@Override
 	public boolean receiveChatLine(long time, SteamID id_us, SteamID id_them, final boolean sent_by_us, int type, String message) {
 		if (id_them.equals(chatID)) {
-			activity().runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					adapter.changeCursor(cursor = fetchCursor());
-					// now scroll to bottom (if already near the bottom)
-					if (layoutManager.findLastVisibleItemPosition() > cursor.getCount() - 3)
-						chatList.scrollToPosition(cursor.getCount() - 1);
+			activity().runOnUiThread(() -> {
+				adapter.changeCursor(cursor = fetchCursor());
+				// now scroll to bottom (if already near the bottom)
+				if (layoutManager.findLastVisibleItemPosition() > cursor.getCount() - 3)
+					chatList.scrollToPosition(cursor.getCount() - 1);
 
-					if (!sent_by_us && chat_typing != null)
-						chat_typing.setVisibility(View.GONE);
-				}
+				if (!sent_by_us && chat_typing != null)
+					chat_typing.setVisibility(View.GONE);
 			});
 			return true;
 		}

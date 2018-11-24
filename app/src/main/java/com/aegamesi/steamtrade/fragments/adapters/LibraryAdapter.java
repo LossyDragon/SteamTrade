@@ -9,14 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.fragments.FragmentLibrary;
+import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -94,15 +93,12 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
 	public void setGames(List<FragmentLibrary.LibraryEntry> list, final int sort) {
 		if (list != null) {
-			Collections.sort(list, new Comparator<FragmentLibrary.LibraryEntry>() {
-				@Override
-				public int compare(FragmentLibrary.LibraryEntry lhs, FragmentLibrary.LibraryEntry rhs) {
-					if (sort == SORT_ALPHABETICAL)
-						return lhs.name.compareTo(rhs.name);
-					if (sort == SORT_PLAYTIME)
-						return -AndroidUtil.numCompare(lhs.playtime_forever, rhs.playtime_forever);
-					return 0;
-				}
+			Collections.sort(list, (lhs, rhs) -> {
+				if (sort == SORT_ALPHABETICAL)
+					return lhs.name.compareTo(rhs.name);
+				if (sort == SORT_PLAYTIME)
+					return -AndroidUtil.numCompare(lhs.playtime_forever, rhs.playtime_forever);
+				return 0;
 			});
 		}
 		currentSort = sort;

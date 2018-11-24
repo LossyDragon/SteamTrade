@@ -41,11 +41,11 @@ import java.util.Map;
 public class AndroidUtil {
 
 	public static int numCompare(double x, double y) {
-		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+		return Double.compare(x, y);
 	}
 
 	public static int numCompare(long x, long y) {
-		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+		return Long.compare(x, y);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -144,9 +144,8 @@ public class AndroidUtil {
 		alert.setTitle(title);
 		alert.setMessage(message);
 		alert.setNeutralButton(android.R.string.ok, callback);
-		alert.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-					}});
+		alert.setNegativeButton(android.R.string.cancel, (dialog, id) -> {
+		});
 		alert.show();
 	}
 
@@ -218,5 +217,4 @@ public class AndroidUtil {
 			return "circle";
 		}
 	}
-
 }

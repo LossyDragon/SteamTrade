@@ -1,7 +1,6 @@
 package com.aegamesi.steamtrade.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,8 +18,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aegamesi.steamtrade.libs.PicassoImageGetter;
 import com.aegamesi.steamtrade.R;
+import com.aegamesi.steamtrade.libs.PicassoImageGetter;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
 import com.aegamesi.steamtrade.steam.SteamWeb;
@@ -293,16 +292,12 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 			AlertDialog.Builder builder = new AlertDialog.Builder(activity());
 			builder.setMessage(String.format(getString(R.string.friend_remove_message), activity().steamFriends.getFriendPersonaName(id)));
 			builder.setTitle(R.string.friend_remove);
-			builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-					activity().steamFriends.removeFriend(FragmentProfile.this.id);
-					Toast.makeText(activity(), String.format(getString(R.string.friend_removed), activity().steamFriends.getFriendPersonaName(FragmentProfile.this.id)), Toast.LENGTH_LONG).show();
-					activity().browseToFragment(new FragmentFriends(), true);
-				}
+			builder.setPositiveButton(android.R.string.ok, (dialog, id) -> {
+				activity().steamFriends.removeFriend(FragmentProfile.this.id);
+				Toast.makeText(activity(), String.format(getString(R.string.friend_removed), activity().steamFriends.getFriendPersonaName(FragmentProfile.this.id)), Toast.LENGTH_LONG).show();
+				activity().browseToFragment(new FragmentFriends(), true);
 			});
-			builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int id) {
-				}
+			builder.setNegativeButton(android.R.string.cancel, (dialog, id) -> {
 			});
 			builder.create().show();
 		}

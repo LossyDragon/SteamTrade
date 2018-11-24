@@ -1,6 +1,7 @@
 package com.aegamesi.steamtrade.dialogs;
 
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -45,6 +46,7 @@ public class EulaDialog extends DialogFragment {
         final String eulaKey = EULA_PREFIX + VERSION_CODE;
         final SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
+        @SuppressLint("InflateParams")
         final View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_eula, null);
         TextView textView = view.findViewById(R.id.eula_text);
         textView.setText(Html.fromHtml(getString(R.string.EULA), Html.FROM_HTML_MODE_COMPACT));
@@ -52,21 +54,15 @@ public class EulaDialog extends DialogFragment {
         return new AlertDialog.Builder(getActivity())
                 .setTitle(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME)
                 .setView(view)
-                .setPositiveButton(android.R.string.ok, new Dialog.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        SharedPreferences.Editor editor = pref.edit();
-                        editor.putBoolean(eulaKey, true);
-                        editor.apply();
-                        dialogInterface.dismiss();
-                    }
+                .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putBoolean(eulaKey, true);
+                    editor.apply();
+                    dialogInterface.dismiss();
                 })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (getActivity() != null) {
-                            getActivity().finish();
-                        }
+                .setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> {
+                    if (getActivity() != null) {
+                        getActivity().finish();
                     }
                 })
                 .setCancelable(false)
