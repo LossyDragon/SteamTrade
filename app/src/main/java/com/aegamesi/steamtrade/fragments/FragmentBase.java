@@ -8,10 +8,9 @@ import android.support.v4.app.Fragment;
 import com.aegamesi.steamtrade.MainActivity;
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.steam.SteamMessageHandler;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg;
-
 
 public class FragmentBase extends Fragment implements SteamMessageHandler {
 	protected boolean abort = false;
@@ -59,7 +58,7 @@ public class FragmentBase extends Fragment implements SteamMessageHandler {
 	/* Toolbar CircleImageView set picture */
 	public void setToolBarPicture(String uri) {
 		if (activity() != null && activity().toolbar != null) {
-			Picasso.get()
+			Glide.with(activity().getApplicationContext())
 					.load(uri)
 					.error(R.drawable.default_avatar)
 					.into(activity().toolbarImageView);

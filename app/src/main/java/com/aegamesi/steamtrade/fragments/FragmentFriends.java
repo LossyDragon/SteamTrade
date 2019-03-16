@@ -102,7 +102,7 @@ public class FragmentFriends extends FragmentBase implements OnClickListener, Ch
 		recyclerView.addItemDecoration(new AndroidUtil.RecyclerViewSpacer(12));
 
 		boolean hideBlockedUsers = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_hide_blocked_users", true);
-		adapter = new FriendsListAdapter(this, null, true, hideBlockedUsers);
+		adapter = new FriendsListAdapter(activity().getApplicationContext(), this, null, true, hideBlockedUsers);
 		recyclerView.setAdapter(adapter);
 
 		return view;

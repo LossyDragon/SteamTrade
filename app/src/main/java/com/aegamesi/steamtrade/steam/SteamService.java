@@ -231,7 +231,7 @@ public class SteamService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		steamClient = new SteamClient();
-		chatManager = new SteamChatManager();
+		chatManager = new SteamChatManager(getApplicationContext());
 
 		if (!timerRunning) {
 			myTimer = new Timer();

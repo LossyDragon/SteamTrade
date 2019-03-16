@@ -19,11 +19,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.libs.PicassoImageGetter;
+import com.aegamesi.steamtrade.libs.GlideImageGetter;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
 import com.aegamesi.steamtrade.steam.SteamWeb;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -205,7 +205,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		if (profile_info != null) {
 			String summary_raw = profile_info.getSummary();
 			String summary = SteamUtil.parseBBCode(summary_raw);
-			Html.ImageGetter imageGetter = new PicassoImageGetter(summaryView, summaryView.getContext());
+			Html.ImageGetter imageGetter = new GlideImageGetter(summaryView, summaryView.getContext());
 			summaryView.setText(Html.fromHtml(summary, Html.FROM_HTML_MODE_LEGACY, imageGetter, null));
 			summaryView.setMovementMethod(new LinkMovementMethod());
 		}
@@ -220,7 +220,7 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		nameView.setText(name);
 
 		if (avatar != null && avatar.length() == 40 && !avatar.equals("0000000000000000000000000000000000000000")) {
-			Picasso.get()
+			Glide.with(activity().getApplicationContext())
 					.load("http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar.substring(0, 2) + "/" + avatar + "_full.jpg")
 					.into(avatarView);
 		}
@@ -230,13 +230,13 @@ public class FragmentProfile extends FragmentBase implements View.OnClickListene
 		else
 			statusView.setText(state.toString());
 
-		int color = ContextCompat.getColor(getContext(), R.color.steam_online);
+		int color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_online);
 		if (relationship == EFriendRelationship.Blocked || relationship == EFriendRelationship.Ignored || relationship == EFriendRelationship.IgnoredFriend)
-			color = ContextCompat.getColor(getContext(), R.color.steam_blocked);
+			color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_blocked);
 		else if (game != null && game.length() > 0)
-			color = ContextCompat.getColor(getContext(), R.color.steam_game);
+			color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_game);
 		else if (state == EPersonaState.Offline || state == null)
-			color = ContextCompat.getColor(getContext(), R.color.steam_offline);
+			color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_offline);
 
 		nameView.setTextColor(color);
 		statusView.setTextColor(color);

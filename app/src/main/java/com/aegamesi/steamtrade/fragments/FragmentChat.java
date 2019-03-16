@@ -90,12 +90,9 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 
 		// typing timer
 		typingHandler = new Handler();
-		typingRunnable = new Runnable() {
-			@Override
-			public void run() {
-				if (chat_typing != null)
-					chat_typing.setVisibility(View.GONE);
-			}
+		typingRunnable = () -> {
+			if (chat_typing != null)
+				chat_typing.setVisibility(View.GONE);
 		};
 
 		//Get message history from Steam.
@@ -107,7 +104,7 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 		String avatar_url = null;
 		String avatar_game = steamFriends.getFriendGamePlayed(chatID).toString();
 		EPersonaState state = steamFriends.getFriendPersonaState(chatID);
-		int color = ContextCompat.getColor(getContext(), R.color.steam_online);
+		int color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_online);
 
 		if (chatID != null && steamFriends.getFriendAvatar(chatID) != null) {
 			String imgHash = SteamUtil.bytesToHex(steamFriends.getFriendAvatar(chatID)).toLowerCase(Locale.US);
@@ -116,13 +113,13 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 			}
 
 			if(!Objects.equals(avatar_game, "0")) {
-				color = ContextCompat.getColor(getContext(), R.color.steam_game);
+				color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_game);
 				Log.i("Toolbar", chatID + " playing a game...");
 			}
 
 			if(state == EPersonaState.Offline)
 			{
-				color = ContextCompat.getColor(getContext(), R.color.steam_offline);
+				color = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_offline);
 			}
 
 			// Apply the information we have to the Toolbar.
@@ -311,7 +308,7 @@ public class FragmentChat extends FragmentBase implements ChatReceiver {
 		adapter.setPersonaNames(activity().steamFriends.getPersonaName(), friendPersonaName);
 
 		// do colors for profile view
-		adapter.color_default = ContextCompat.getColor(getContext(), R.color.steam_online);
+		adapter.color_default = ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_online);
 
 	}
 

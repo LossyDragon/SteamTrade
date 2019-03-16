@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.libs.CursorRecyclerAdapter;
-import com.aegamesi.steamtrade.libs.PicassoImageGetter;
+import com.aegamesi.steamtrade.libs.GlideImageGetter;
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.steam.SteamUtil;
 
@@ -88,7 +88,7 @@ public class ChatAdapter extends CursorRecyclerAdapter<ChatAdapter.ViewHolder> i
 
             holder.viewDivider.setVisibility(expandedDivider ? View.VISIBLE : View.GONE);
 
-            Html.ImageGetter imageGetter = new PicassoImageGetter(holder.textMessage, holder.textMessage.getContext());
+            Html.ImageGetter imageGetter = new GlideImageGetter(holder.textMessage, holder.textMessage.getContext());
             String message = SteamUtil.parseEmoticons(chatLine);
 
 
@@ -114,7 +114,7 @@ public class ChatAdapter extends CursorRecyclerAdapter<ChatAdapter.ViewHolder> i
 
             holder.viewBubble.getBackground().setColorFilter(bgColor, Mode.MULTIPLY);
 
-            Html.ImageGetter imageGetter = new PicassoImageGetter(holder.textMessage, holder.textMessage.getContext());
+            Html.ImageGetter imageGetter = new GlideImageGetter(holder.textMessage, holder.textMessage.getContext());
 
             column_message = TextUtils.htmlEncode(column_message); // escape html
             String message = SteamUtil.parseEmoticons(column_message);

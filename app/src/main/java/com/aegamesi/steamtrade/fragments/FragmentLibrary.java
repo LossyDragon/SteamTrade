@@ -66,7 +66,7 @@ public class FragmentLibrary extends FragmentBase implements View.OnClickListene
 		loading_view = view.findViewById(R.id.offers_loading);
 
 		listGames = view.findViewById(R.id.games_list);
-		adapterLibrary = new LibraryAdapter(this);
+		adapterLibrary = new LibraryAdapter(activity().getApplicationContext(), this	);
 		adapterLibrary.setGames(games, adapterLibrary.currentSort);
 		RecyclerView.LayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
 		listGames.setHasFixedSize(true);

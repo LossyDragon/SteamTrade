@@ -1,5 +1,6 @@
 package com.aegamesi.steamtrade.fragments.adapters;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -12,7 +13,7 @@ import android.widget.TextView;
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.fragments.FragmentLibrary;
 import com.aegamesi.steamtrade.libs.AndroidUtil;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,8 +27,10 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 	private List<FragmentLibrary.LibraryEntry> games = null;
 	private List<FragmentLibrary.LibraryEntry> filteredList;
 	private FragmentLibrary fragment;
+	private Context context;
 
-	public LibraryAdapter(FragmentLibrary fragmentLibrary) {
+	public LibraryAdapter(Context context, FragmentLibrary fragmentLibrary) {
+		this.context = context;
 		this.fragment = fragmentLibrary;
 		filteredList = new ArrayList<>();
 	}
@@ -48,7 +51,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 		if (entry.img_logo_url.trim().length() > 0) {
 			String image_url = "http://media.steampowered.com/steamcommunity/public/images/apps/%d/%s.jpg";
 
-			Picasso.get()
+			Glide.with(context)
 					.load(String.format(Locale.US, image_url, entry.appid, entry.img_logo_url))
 					.into(h.imageHeader);
 		}

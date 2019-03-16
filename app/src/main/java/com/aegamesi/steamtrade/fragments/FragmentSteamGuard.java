@@ -257,7 +257,7 @@ public class FragmentSteamGuard extends FragmentBase implements OnClickListener 
 				}
 
 				File mafile = new File(activity().getCacheDir(), filename);
-				Uri contentUri = FileProvider.getUriForFile(getContext(), "com.aegamesi.steamtrade.fileprovider", mafile);
+				Uri contentUri = FileProvider.getUriForFile(activity().getApplicationContext(), "com.aegamesi.steamtrade.fileprovider", mafile);
 
 				// export
 				Intent sendIntent = new Intent();

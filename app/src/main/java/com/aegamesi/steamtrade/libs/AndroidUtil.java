@@ -3,14 +3,8 @@ package com.aegamesi.steamtrade.libs;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.RectF;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -25,7 +19,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.squareup.picasso.Transformation;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,6 +28,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -132,7 +126,7 @@ public class AndroidUtil {
 		cacheFile.getParentFile().mkdirs();
 		cacheFile.createNewFile();
 		FileOutputStream fos = new FileOutputStream(cacheFile);
-		OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF8");
+		OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
 		PrintWriter pw = new PrintWriter(osw);
 		pw.println(content);
 		pw.flush();
@@ -172,49 +166,15 @@ public class AndroidUtil {
 			this.spacing = i;
 		}
 
-		public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state){
+		public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state){
 
-			if( outRect != null && parent != null) {
-				int position = parent.getChildAdapterPosition(view);
-				outRect.left = spacing;
-				outRect.right = spacing;
-				outRect.bottom = spacing;
-				if (position < 1) {
-					outRect.top = spacing;
-				}
+			int position = parent.getChildAdapterPosition(view);
+			outRect.left = spacing;
+			outRect.right = spacing;
+			outRect.bottom = spacing;
+			if (position < 1) {
+				outRect.top = spacing;
 			}
-		}
-	}
-
-	//Create a circled bitmap.
-	public static class CircleTransform implements Transformation {
-		@Override
-		public Bitmap transform(Bitmap source) {
-			final Bitmap output = Bitmap.createBitmap(source.getWidth(),
-					source.getHeight(), Bitmap.Config.ARGB_8888);
-			final Canvas canvas = new Canvas(output);
-
-			final int color = Color.RED;
-			final Paint paint = new Paint();
-			final Rect rect = new Rect(0, 0, source.getWidth(), source.getHeight());
-			final RectF rectF = new RectF(rect);
-
-			paint.setAntiAlias(true);
-			canvas.drawARGB(0, 0, 0, 0);
-			paint.setColor(color);
-			canvas.drawOval(rectF, paint);
-
-			paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-			canvas.drawBitmap(source, rect, rect, paint);
-
-			source.recycle();
-
-			return output;
-		}
-
-		@Override
-		public String key() {
-			return "circle";
 		}
 	}
 }

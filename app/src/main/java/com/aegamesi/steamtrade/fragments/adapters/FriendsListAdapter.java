@@ -1,5 +1,6 @@
 package com.aegamesi.steamtrade.fragments.adapters;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff.Mode;
 import android.support.annotation.NonNull;
@@ -15,9 +16,11 @@ import android.widget.TextView;
 
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.libs.AndroidUtil;
+import com.aegamesi.steamtrade.steam.SteamAPI;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
-import com.squareup.picasso.Picasso;
+import com.aegamesi.steamtrade.steam.StoreFront;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,9 +32,13 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EFriendRelationship;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends;
+import uk.co.thomasc.steamkit.types.gameid.GameID;
 import uk.co.thomasc.steamkit.types.steamid.SteamID;
 
 
@@ -42,14 +49,20 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private Map<FriendListCategory, Integer> categoryCounts;
     private View.OnClickListener clickListener;
     private String filter = null;
+    private Context context;
 
-    private boolean hasSections = true;
-    private boolean hideBlockedUsers = false;
+    private boolean hasSections;
+    private boolean hideBlockedUsers;
+    private StoreFront api;
+    private Map<SteamID, String> gameData;
 
-    public FriendsListAdapter(View.OnClickListener clickListener, List<SteamID> listFriends, boolean hasSections, boolean hideBlockedUsers) {
+    public FriendsListAdapter(Context context, View.OnClickListener clickListener, List<SteamID> listFriends, boolean hasSections, boolean hideBlockedUsers) {
+        this.context = context;
         this.clickListener = clickListener;
         this.hasSections = hasSections;
         this.hideBlockedUsers = hideBlockedUsers;
+
+        gameData = new HashMap<>();
 
         if (listFriends == null && SteamService.singleton != null && SteamService.singleton.steamClient != null) {
             SteamFriends steamFriends = SteamService.singleton.steamClient.getHandler(SteamFriends.class);
@@ -320,7 +333,7 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             holder.imageAvatar.setImageResource(R.drawable.default_avatar);
             if (p.avatar_url != null) {
-                Picasso.get()
+                Glide.with(context)
                         .load(p.avatar_url)
                         .into(holder.imageAvatar);
             }
@@ -377,6 +390,7 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             this.text = text;
         }
 
+        @NonNull
         @Override
         public String toString() {
             return text;
@@ -405,27 +419,33 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         void update() {
             SteamFriends steamFriends = SteamService.singleton.steamClient.getHandler(SteamFriends.class);
+
             if (steamFriends == null)
                 return;
 
             this.relationship = steamFriends.getFriendRelationship(steamid);
             this.state = steamFriends.getFriendPersonaState(steamid);
             this.name = steamFriends.getFriendPersonaName(steamid);
-
-            //TODO: this needs fixing. Steam Issue, not app.
-            //Steam broke how you're able to get Game Names.
-            String temp = steamFriends.getFriendGamePlayed(steamid).toString();
-            if(temp.contains("-")){
-                //Most likely a non-steam game
-                this.game = steamFriends.getFriendGamePlayedName(steamid);
-            } else if (!Objects.equals(temp, "0")) {
-                //Playing a steam game or mod. Something with an app ID.
-                this.game = "(" + steamFriends.getFriendGamePlayed(steamid) + ") " + steamFriends.getFriendGamePlayedName(steamid);
-            }
-            //End temp fix
-
             this.nickname = steamFriends.getFriendNickname(steamid);
             this.lastOnline = steamFriends.getFriendLastLogoff(steamid) * 1000L; // convert to millis
+
+            String temp = steamFriends.getFriendGamePlayed(steamid).toString();
+            GameID appid = steamFriends.getFriendGamePlayed(steamid);
+
+            if(temp.contains("-")) {
+                this.game = steamFriends.getFriendGamePlayedName(steamid);
+            }
+            else if(steamFriends.getFriendGamePlayed(steamid).toLong() > 0) {
+
+                getGameName(steamid, appid);
+
+                if(gameData.containsKey(steamid)) {
+                    this.game = gameData.get(steamid);
+                } else {
+                    this.game = "( " + steamFriends.getFriendGamePlayed(steamid) + " )";
+                }
+            }
+
             category = findCategory();
 
             if (steamid != null && steamFriends.getFriendAvatar(steamid) != null) {
@@ -435,10 +455,42 @@ public class FriendsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
         }
 
+        private void getGameName(SteamID steamId, @NonNull GameID appId) {
+
+            int id = Integer.valueOf(appId.toString());
+
+            if(api == null) {
+                api = SteamAPI.getApiInstance().create(StoreFront.class);
+            }
+
+            api.getAppDetails(id).enqueue(new Callback<Map<Integer, StoreFront.AppDetailsResponse>>() {
+                @Override
+                public void onResponse(Call<Map<Integer, StoreFront.AppDetailsResponse>> call, Response<Map<Integer, StoreFront.AppDetailsResponse>> response) {
+
+                    if(response.isSuccessful()) {
+                        Map data = response.body();
+                        StoreFront.AppDetailsResponse detailsResponse = (StoreFront.AppDetailsResponse) data.get(id);
+
+                        gameData.put(steamId, detailsResponse.getData().getName());
+
+
+                        Log.d("FriendsListAdapter", "detailsResponse got: " +  detailsResponse.getData().getName());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Map<Integer, StoreFront.AppDetailsResponse>> call, Throwable t) {
+                        Log.e("FriendsListAdapter", call.toString());
+                }
+            });
+        }
+
         private FriendListCategory findCategory() {
-            if ((recentChats != null && recentChats.contains(steamid)) || SteamService.singleton.chatManager.unreadMessages.contains(steamid))
+            if ((recentChats != null && recentChats.contains(steamid)) ||
+                    SteamService.singleton.chatManager.unreadMessages.contains(steamid))
                 return FriendListCategory.RECENTCHAT;
-            if (relationship == EFriendRelationship.Blocked || relationship == EFriendRelationship.Ignored || relationship == EFriendRelationship.IgnoredFriend)
+            if (relationship == EFriendRelationship.Blocked ||
+                    relationship == EFriendRelationship.Ignored || relationship == EFriendRelationship.IgnoredFriend)
                 return FriendListCategory.BLOCKED;
             if (relationship == EFriendRelationship.RequestRecipient)
                 return FriendListCategory.FRIENDREQUEST;

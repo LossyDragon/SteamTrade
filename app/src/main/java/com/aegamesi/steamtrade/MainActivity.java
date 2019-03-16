@@ -40,15 +40,15 @@ import com.aegamesi.steamtrade.fragments.FragmentFriends;
 import com.aegamesi.steamtrade.fragments.FragmentLibrary;
 import com.aegamesi.steamtrade.fragments.FragmentMe;
 import com.aegamesi.steamtrade.fragments.FragmentProfile;
+import com.aegamesi.steamtrade.fragments.FragmentSettings;
 import com.aegamesi.steamtrade.fragments.FragmentWeb;
 import com.aegamesi.steamtrade.steam.SteamMessageHandler;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamUtil;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import java.util.Locale;
 
-import cat.ereza.customactivityoncrash.config.CaocConfig;
 import de.hdodenhof.circleimageview.CircleImageView;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState;
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult;
@@ -86,16 +86,6 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		/* Custom app crash logger */
-		CaocConfig.Builder.create()
-				.backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT)
-				.enabled(true)
-				.showErrorDetails(true)
-				.showRestartButton(true)
-				.logErrorOnRestart(true)
-				.trackActivities(true)
-				.apply();
 
 		if (!assertSteamConnection())
 			return;
@@ -259,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 					avatar);
 
 			//Drawer Profile picture.
-			Picasso.get()
+			Glide.with(this)
 					.load(avatarURL)
 					.into(drawerAvatar);
 
@@ -373,12 +363,11 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 			case R.id.nav_browser:
 				browseToFragment(new FragmentWeb(), true);
 				break;
-			//Preference fragment is out of date for API 28.
-			//case R.id.nav_settings:
-			//	//Settings doesn't utilize Fragmentbase, force title.
-			//	setTitle(R.string.nav_settings);
-			//	browseToFragment(new FragmentSettings(), true);
-			//	break;
+			case R.id.nav_settings:
+				//Settings doesn't utilize Fragmentbase, force title.
+				setTitle(R.string.nav_settings);
+				browseToFragment(new FragmentSettings(), true);
+				break;
 			case R.id.nav_about:
 				AboutDialog.newInstance().show(getSupportFragmentManager(), AboutDialog.TAG);
 				break;
@@ -438,6 +427,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		new SteamDisconnectTask().execute();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -447,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements SteamMessageHandl
 		if (fragmentName != null) {
 			Class<? extends Fragment> fragmentClass = null;
 			try {
-				fragmentClass = (Class<? extends Fragment>) Class.forName(fragmentName);
+				fragmentClass = (Class<? extends Fragment>) Class.forName(fragmentName); //Unchecked Cast
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}

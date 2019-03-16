@@ -11,10 +11,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -25,18 +22,17 @@ import android.util.LongSparseArray;
 
 import com.aegamesi.steamtrade.MainActivity;
 import com.aegamesi.steamtrade.R;
-import com.aegamesi.steamtrade.libs.AndroidUtil;
 import com.aegamesi.steamtrade.steam.DBHelper.ChatEntry;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EChatEntryType;
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends;
@@ -50,13 +46,12 @@ public class SteamChatManager {
     public Set<SteamID> unreadMessages;
     public List<ChatReceiver> receivers;
 
-    private Handler uiHandler = new Handler(Looper.getMainLooper());
-    private String finalAvatarURL = null;
-    private Bitmap bitmap;
+    private Context context;
 
-    SteamChatManager() {
-        unreadMessages = new HashSet<>();
-        receivers = new ArrayList<>();
+    SteamChatManager(Context context) {
+        this.unreadMessages = new HashSet<>();
+        this.receivers = new ArrayList<>();
+        this.context = context;
     }
 
     void receiveMessage(SteamID from, String message, long time) {
@@ -98,6 +93,9 @@ public class SteamChatManager {
 
     @SuppressLint("StaticFieldLeak")
     public void updateNotification() {
+
+        Bitmap bitmap = null;
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SteamService.singleton);
         boolean enableNotification = prefs.getBoolean("pref_notification_chat", true);
         if (!enableNotification)
@@ -185,31 +183,19 @@ public class SteamChatManager {
             }
 
             // Add friend's avatar to notification shade.
-            finalAvatarURL = avatarURL;
-            uiHandler.post(() ->
-            {
-                try {
-                    bitmap = new AsyncTask<Void, Void, Bitmap>() {
-                        @Override
-                        protected Bitmap doInBackground(Void... params) {
-                            try {
-                                return Picasso.get()
-                                        .load(finalAvatarURL)
-                                        .error(R.drawable.default_avatar)
-                                        .transform(new AndroidUtil.CircleTransform())
-                                        .get();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            return null;
-                        }
-                    }.execute().get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-            });
+
+
+            try {
+                bitmap = Glide.with(context)
+                        .asBitmap()
+                        .load(avatarURL)
+                        .apply(new RequestOptions().circleCrop())
+                        .submit()
+                        .get(5, TimeUnit.SECONDS);
+
+            } catch (Exception ignored) {
+                /* Nothing */
+            }
 
             builder.setLargeIcon(bitmap);
 

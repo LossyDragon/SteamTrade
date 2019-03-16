@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -49,7 +48,7 @@ public class EulaDialog extends DialogFragment {
         @SuppressLint("InflateParams")
         final View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_eula, null);
         TextView textView = view.findViewById(R.id.eula_text);
-        textView.setText(Html.fromHtml(getString(R.string.EULA), Html.FROM_HTML_MODE_COMPACT));
+        textView.setText(Html.fromHtml(getString(R.string.EULA), Html.FROM_HTML_MODE_LEGACY));
 
         return new AlertDialog.Builder(getActivity())
                 .setTitle(getString(R.string.app_name) + " " + BuildConfig.VERSION_NAME)

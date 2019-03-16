@@ -25,7 +25,7 @@ import android.widget.Toast;
 import com.aegamesi.steamtrade.R;
 import com.aegamesi.steamtrade.steam.AccountLoginInfo;
 import com.aegamesi.steamtrade.steam.SteamService;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState;
 import uk.co.thomasc.steamkit.steam3.handlers.steamnotifications.callbacks.NotificationUpdateCallback;
@@ -119,13 +119,13 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		//FragmentMe profile icon.
 		if (!avatar.equals("null") || !avatar.contains(""))
 		{
-			Picasso.get()
+			Glide.with(activity().getApplicationContext())
 					.load(avatar)
 					.error(R.drawable.default_avatar)
 					.into(avatarView);
 		}
 
-		nameView.setTextColor(ContextCompat.getColor(getContext(), R.color.steam_online));
+		nameView.setTextColor(ContextCompat.getColor(activity().getApplicationContext(), R.color.steam_online));
 
 		updateNotification(notifyChat, R.plurals.notification_messages, NotificationType.OFFLINE_MSGS);
 		updateNotification(notifyComments, R.plurals.notification_comments, NotificationType.COMMENTS);
@@ -135,7 +135,7 @@ public class FragmentMe extends FragmentBase implements OnClickListener, OnItemS
 		int num = activity().steamNotifications.getNotificationCounts().get(type);
 		String text = getResources().getQuantityString(plural, num, num);
 		textView.setText(text);
-		textView.setTextColor(ContextCompat.getColor(getContext(), num == 0 ? R.color.notification_text_off : R.color.notification_text_on));
+		textView.setTextColor(ContextCompat.getColor(activity().getApplicationContext(), num == 0 ? R.color.notification_text_off : R.color.notification_text_on));
 	}
 
 	public int stateToIndex(EPersonaState state) {

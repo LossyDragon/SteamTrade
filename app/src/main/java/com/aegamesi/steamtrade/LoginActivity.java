@@ -37,7 +37,7 @@ import com.aegamesi.steamtrade.steam.SteamConnectionListener;
 import com.aegamesi.steamtrade.steam.SteamService;
 import com.aegamesi.steamtrade.steam.SteamTwoFactor;
 import com.aegamesi.steamtrade.steam.SteamUtil;
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import org.json.JSONException;
 
@@ -119,7 +119,7 @@ public class LoginActivity extends AppCompatActivity {
 
         RecyclerView accountsList = findViewById(R.id.accounts_list);
 
-        AccountListAdapter accountListAdapter = new AccountListAdapter();
+        AccountListAdapter accountListAdapter = new AccountListAdapter(this);
         accountsList.setAdapter(accountListAdapter);
         accountsList.setLayoutManager(new LinearLayoutManager(this));
         if (accountListAdapter.getItemCount() == 0) {
@@ -474,8 +474,10 @@ public class LoginActivity extends AppCompatActivity {
 
     private class AccountListAdapter extends RecyclerView.Adapter<AccountListAdapter.AccountViewHolder> {
         List<AccountLoginInfo> accounts;
+        Context context;
 
-        AccountListAdapter() {
+        AccountListAdapter(Context context) {
+            this.context = context;
             accounts = AccountLoginInfo.getAccountList(LoginActivity.this);
             notifyDataSetChanged();
         }
@@ -498,7 +500,7 @@ public class LoginActivity extends AppCompatActivity {
             String avatar = sharedPreferences.getString("avatar_" + account.username, "");
 
             if (!avatar.equals("")) {
-                Picasso.get()
+                Glide.with(context)
                         .load(avatar)
                         .into(holder.avatar);
             }

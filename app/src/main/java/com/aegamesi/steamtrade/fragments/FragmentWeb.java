@@ -225,7 +225,7 @@ public class FragmentWeb extends FragmentBase {
                         String go = SteamTwoFactor.generateConfirmationParameters(activity(), tag);
 
                         if (go.length() == 0)
-                            steamGuardJavascriptInterface.setResultError(-1);
+                            steamGuardJavascriptInterface.setResultError();
                         else
                             steamGuardJavascriptInterface.setResultOkay(go);
                     }
@@ -262,10 +262,10 @@ public class FragmentWeb extends FragmentBase {
             returnValue = value == null ? "" : value;
         }
 
-        void setResultError(int code) {
+        void setResultError() {
             returnStatus = "error";
             returnValue = "";
-            returnCode = "" + code;
+            returnCode = "" + -1;
         }
 
         void setResultBusy() {
