@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_profile"
@@ -20,7 +20,7 @@
         app:civ_border_color="@color/steam_online"
         app:civ_border_width="2dip" />
 
-    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/notify_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
             android:textColor="#eee"
             android:textStyle="bold"
             tools:text="0" />
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
 
     <TextView
@@ -69,4 +69,4 @@
         android:singleLine="true"
         tools:text="Online" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

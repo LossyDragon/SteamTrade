@@ -17,7 +17,7 @@
             android:layout_margin="1dip"
             android:background="@android:color/darker_gray" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/chat"
             android:layout_width="match_parent"
             android:layout_height="0dip"
@@ -52,7 +52,8 @@
                 android:ems="10"
                 android:hint="@string/chat_hint"
                 android:imeOptions="actionSend"
-                android:inputType="text|textMultiLine|textCapSentences|textAutoCorrect" />
+                android:inputType="text|textMultiLine|textCapSentences|textAutoCorrect"
+                android:importantForAutofill="no" />
 
             <ImageButton
                 android:id="@+id/chat_button"

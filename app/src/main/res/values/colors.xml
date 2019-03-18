@@ -14,5 +14,6 @@
     <color name="notification_off">#777</color>
     <color name="notification_text_on">#70ba24</color>
     <color name="notification_text_off">#bfbfbf</color>
+    <color name="dark_background">#FF424242</color>
 
 </resources>
