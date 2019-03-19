@@ -72,6 +72,8 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <receiver android:name=".LogoutReceiver" />
+
         <!--<receiver android:name=".IceBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_ACTION" />

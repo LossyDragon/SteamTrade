@@ -1,8 +1,6 @@
 package com.aegamesi.steamtrade.steam
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
@@ -16,27 +14,16 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.preference.PreferenceManager
-import androidx.core.app.NotificationCompat
-import androidx.core.app.TaskStackBuilder
 import android.util.Log
-
-import com.aegamesi.steamtrade.IceBroadcastReceiver
-import com.aegamesi.steamtrade.LoginActivity
-import com.aegamesi.steamtrade.MainActivity
-import com.aegamesi.steamtrade.R
-
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.RandomAccessFile
-import java.util.Timer
-import java.util.TimerTask
-
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EChatEntryType
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EFriendRelationship
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EUniverse
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.TaskStackBuilder
+import com.aegamesi.steamtrade.*
+import com.aegamesi.steamtrade.LogoutReceiver
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import uk.co.thomasc.steamkit.base.generated.steamlanguage.*
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.FriendMsgCallback
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.FriendMsgEchoCallback
@@ -59,11 +46,18 @@ import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.CMListCallback
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.ConnectedCallback
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback
 import uk.co.thomasc.steamkit.steam3.webapi.WebAPI
+import uk.co.thomasc.steamkit.types.gameid.GameID
+import uk.co.thomasc.steamkit.types.steamid.SteamID
 import uk.co.thomasc.steamkit.util.KeyDictionary
 import uk.co.thomasc.steamkit.util.WebHelpers
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
 import uk.co.thomasc.steamkit.util.crypto.CryptoHelper
 import uk.co.thomasc.steamkit.util.crypto.RSACrypto
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.util.*
 
 
 // This is the backbone of the app. Stores SteamClient connection, message, chat, and trade handlers, schemas...
@@ -83,7 +77,12 @@ class SteamService : Service() {
     private var _db: SQLiteDatabase? = null
     private var handler: Handler? = null
     private var timerRunning = false
-    private val broadcast = IceBroadcastReceiver()
+    private var broadcast: IceBroadcastReceiver? = null
+
+    private var api: StoreFront? = null
+    val gameData: MutableMap<SteamID, String> = mutableMapOf()
+
+    private var notificationManager: NotificationManagerCompat? = null
 
     private fun resetAuthentication() {
         sessionID = null
@@ -92,50 +91,46 @@ class SteamService : Service() {
     }
 
     private fun buildNotification(code: Int, update: Boolean) {
-        // then, update our notification
-        val persistentNotification = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("pref_persist_notification", true)
-        if (persistentNotification) {
-            val notificationIntent = Intent(this, LoginActivity::class.java)
-            notificationIntent.action = Intent.ACTION_MAIN
-            notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-            val contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
-            //We need this to create a Notification Channel ID (on 1st installation), Android O.
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val notificationChannel = NotificationChannel(Integer.toString(NOTIFICATION_ID), "Ice Foreground Service", NotificationManager.IMPORTANCE_LOW)
-            notificationManager.createNotificationChannel(notificationChannel)
+        //Set up the Service notification intent.
+        val notificationIntent = Intent(this, LoginActivity::class.java)
+        notificationIntent.action = Intent.ACTION_MAIN
+        notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+        val contentIntent = PendingIntent.getActivity(this@SteamService, 0, notificationIntent, 0)
 
-            //New notification, permanent-collapsed as its only an "online" indicator.
-            val notification: Notification
-            notification = if (code != SteamConnectionListener.STATUS_FAILURE) {
-                Notification.Builder(this, Integer.toString(NOTIFICATION_ID))
-                        .setSmallIcon(R.drawable.ic_notify_online)
-                        .setSubText(resources.getStringArray(R.array.connection_status)[code])
-                        .setContentIntent(contentIntent)
-                        .build()
-            } else {
-                Notification.Builder(this, Integer.toString(NOTIFICATION_ID))
-                        .setSmallIcon(R.drawable.ic_notify_disconnect)
-                        .setSubText(resources.getStringArray(R.array.connection_status)[code])
-                        .setContentIntent(contentIntent)
-                        .build()
-            }
+        val broadcastIntent = Intent(this, LogoutReceiver::class.java)
+        val actionIntent = PendingIntent.getBroadcast(this, 0,
+                broadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-            //if (steamClient != null) {
-            //    SteamNotifications steamNotifications = steamClient.getHandler(SteamNotifications.class);
-            //    if (steamNotifications != null)
-            //    notification.setContentInfo(steamNotifications.getTotalNotificationCount() + "");
-            //}
+        val action: NotificationCompat.Action = NotificationCompat.Action.Builder(
+                R.drawable.ic_notify_disconnect,
+                "Log Off",
+                actionIntent).build()
 
-            if (update) {
-                notificationManager.notify(NOTIFICATION_ID, notification)
-            } else {
-                //startForeground(NOTIFICATION_ID, builder.build());
-                startForeground(NOTIFICATION_ID, notification)
-            }
+        val builder: Notification = if (code != SteamConnectionListener.STATUS_FAILURE) {
+            NotificationCompat.Builder(this@SteamService, SteamTrade.SERVICE_ID)
+                    .setSmallIcon(R.drawable.ic_notify_online)
+                    .setContentText(resources.getStringArray(R.array.connection_status)[code])
+                    .setAutoCancel(false)
+                    .addAction(action)
+                    .setContentIntent(contentIntent)
+                    .build()
+
+        } else {
+            NotificationCompat.Builder(this@SteamService, SteamTrade.SERVICE_ID)
+                    .setSmallIcon(R.drawable.ic_notify_disconnect)
+                    .setContentText(resources.getStringArray(R.array.connection_status)[code])
+                    .setContentIntent(contentIntent)
+                    .setAutoCancel(true)
+                    .build()
+        }
+
+        if (update) {
+            notificationManager!!.notify(SteamTrade.SERVICE_CHANNEL, builder)
+        } else {
+            startForeground(SteamTrade.SERVICE_CHANNEL, builder)
         }
     }
-
 
     // this needs to take place in a non-main thread
     private fun processLogon(listener: SteamConnectionListener?) {
@@ -161,8 +156,12 @@ class SteamService : Service() {
         return _db!!
     }
 
+
     override fun onCreate() {
         super.onCreate()
+
+        notificationManager = NotificationManagerCompat.from(this)
+        broadcast = IceBroadcastReceiver()
 
         handler = Handler()
         dbHelper = DBHelper(this)
@@ -428,11 +427,14 @@ class SteamService : Service() {
             }
         })
         msg.handle(PersonaStateCallback::class.java, object : ActionT<PersonaStateCallback>() {
+            // handle notifications for friend requests
+            //Support legacy notification modes. [setPriority, setVibrate, setSound]
+            @Suppress("DEPRECATION")
             override fun call(obj: PersonaStateCallback) {
-                // handle notifications for friend requests
-                val enableNotification = PreferenceManager.getDefaultSharedPreferences(this@SteamService).getBoolean("pref_notification_friendrequest", true)
+                val enableRequestNotification = PreferenceManager.getDefaultSharedPreferences(this@SteamService).getBoolean("pref_notification_friendrequest", true)
                 val steamFriends = steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
-                if (steamFriends != null && enableNotification) {
+
+                if (steamFriends != null && enableRequestNotification) {
                     if (steamFriends.getFriendRelationship(obj.friendID) == EFriendRelationship.RequestRecipient) {
                         // get number of friend requests pending
                         var friendRequests = 0
@@ -440,46 +442,60 @@ class SteamService : Service() {
                             if (steamFriends.getFriendRelationship(id) == EFriendRelationship.RequestRecipient)
                                 friendRequests++
 
-
-                        //We need this to create a Notification Channel ID (on 1st installation), Android O.
-                        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                        val notificationChannel = NotificationChannel(Integer.toString(NOTIFICATION_ID2), "Friend Requests", NotificationManager.IMPORTANCE_DEFAULT)
-                        notificationManager.createNotificationChannel(notificationChannel)
-
-                        // create a notification
-                        val partnerName = obj.name
                         val prefs = PreferenceManager.getDefaultSharedPreferences(this@SteamService)
-                        val builder = NotificationCompat.Builder(this@SteamService, Integer.toString(NOTIFICATION_ID2))
-                        builder.setSmallIcon(R.drawable.ic_notify_friend)
-                        builder.setContentTitle(getString(R.string.friend_request))
-                        if (friendRequests == 1) {
-                            builder.setContentText(String.format(getString(R.string.friend_request_text), partnerName))
-                        } else {
-                            builder.setContentText(String.format(getString(R.string.friend_request_multi), friendRequests))
-                        }
-                        builder.priority = NotificationCompat.PRIORITY_MAX
-                        builder.setVibrate(if (prefs.getBoolean("pref_vibrate", true)) longArrayOf(0, 500, 200, 500, 1000) else longArrayOf(0))
-                        builder.setSound(Uri.parse(prefs.getString("pref_notification_sound", "DEFAULT_SOUND")))
-                        builder.setOnlyAlertOnce(true)
-                        builder.setAutoCancel(true)
 
-                        val intent = Intent(this@SteamService, MainActivity::class.java)
-                        if (friendRequests == 1) {
+                        val builder: Notification = if (friendRequests == 1) {
+                            //Just one friend request
+                            val partnerName = obj.name
+
+                            val intent = Intent(this@SteamService, MainActivity::class.java)
                             val bundle = Bundle()
+
+                            val stackBuilder = TaskStackBuilder.create(this@SteamService)
+                            stackBuilder.addParentStack(MainActivity::class.java)
+                            stackBuilder.addNextIntent(intent)
+                            val resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+
                             bundle.putLong("steamId", obj.friendID.convertToLong())
                             intent.putExtra("fragment", "com.aegamesi.steamtrade.fragments.FragmentProfile")
                             intent.putExtra("arguments", bundle)
+
+                            Notification.Builder(this@SteamService, SteamTrade.REQUEST_ID)
+                                    .setSmallIcon(R.drawable.ic_notify_friend)
+                                    .setContentTitle(getString(R.string.friend_request))
+                                    .setContentText(String.format(getString(R.string.friend_request_text), partnerName))
+                                    .setPriority(Notification.PRIORITY_HIGH)
+                                    .setVibrate(if (prefs.getBoolean("pref_vibrate", true)) longArrayOf(0, 500, 200, 500, 1000) else longArrayOf(0))
+                                    .setSound(Uri.parse(prefs.getString("pref_notification_sound", "DEFAULT_SOUND")))
+                                    .setOnlyAlertOnce(true)
+                                    .setAutoCancel(true)
+                                    .setContentIntent(resultPendingIntent)
+                                    .build()
+
                         } else {
+                            //More than one friend requests
+                            val intent = Intent(this@SteamService, MainActivity::class.java)
                             intent.putExtra("fragment", "com.aegamesi.steamtrade.fragments.FragmentFriends")
+
+                            val stackBuilder = TaskStackBuilder.create(this@SteamService)
+                            stackBuilder.addParentStack(MainActivity::class.java)
+                            stackBuilder.addNextIntent(intent)
+                            val resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+
+                            Notification.Builder(this@SteamService, SteamTrade.REQUEST_ID)
+                                    .setSmallIcon(R.drawable.ic_notify_friend)
+                                    .setContentTitle(getString(R.string.friend_request))
+                                    .setContentText(String.format(getString(R.string.friend_request_multi), friendRequests))
+                                    .setPriority(Notification.PRIORITY_HIGH)
+                                    .setVibrate(if (prefs.getBoolean("pref_vibrate", true)) longArrayOf(0, 500, 200, 500, 1000) else longArrayOf(0))
+                                    .setSound(Uri.parse(prefs.getString("pref_notification_sound", "DEFAULT_SOUND")))
+                                    .setOnlyAlertOnce(true)
+                                    .setAutoCancel(true)
+                                    .setContentIntent(resultPendingIntent)
+                                    .build()
                         }
 
-                        val stackBuilder = TaskStackBuilder.create(this@SteamService)
-                        stackBuilder.addParentStack(MainActivity::class.java)
-                        stackBuilder.addNextIntent(intent)
-                        val resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-                        builder.setContentIntent(resultPendingIntent)
-                        val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                        mNotificationManager.notify(NOTIFICATION_ID2, builder.build())
+                        notificationManager!!.notify(SteamTrade.REQUEST_CHANNEL, builder)
                     }
                 }
             }
@@ -530,20 +546,20 @@ class SteamService : Service() {
                 if (obj.success > 0) {
                     val otherId = obj.steamId
                     val ourId = steamClient!!.steamId
-                    for (msg in obj.messages) {
-                        if (!msg.isUnread)
+                    for (message in obj.messages) {
+                        if (!message.isUnread)
                             continue
-                        if (msg.timestamp * 1000L > timeLogin)
+                        if (message.timestamp * 1000L > timeLogin)
                             continue
-                        val sentByUs = msg.sender != otherId
+                        val sentByUs = message.sender != otherId
                         // potentially check for if it's been read already
                         chatManager!!.broadcastMessage(
-                                msg.timestamp * 1000, // seconds --> millis
+                                message.timestamp * 1000, // seconds --> millis
                                 ourId,
                                 otherId,
                                 sentByUs,
                                 SteamChatManager.CHAT_TYPE_CHAT,
-                                msg.message
+                                message.message
                         )
                     }
                 }
@@ -563,23 +579,66 @@ class SteamService : Service() {
         })
     }
 
-    fun kill() {
-        running = false
-        connectionListener = null
+    /**
+     * Fetches game names from the SteamWeb API
+     */
+    //TODO this could use some refinement, but it does the job well enough.
+    //TODO the FriendsListAdapter still does not update on-the-fly. The fragment has to be reloaded to show current data.
+    fun getGameData() {
+        val steamFriends = steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
+        val friendsList: List<SteamID> = steamFriends.friendList
 
-        stopSelf()
-
-        if (steamClient != null) {
-            steamClient!!.disconnect()
+        for (x in friendsList) {
+            fetchGameData(x, steamFriends.getFriendGamePlayed(x))
         }
     }
 
-    fun disconnect() {
-        stopSelf()
-        if (steamClient != null) {
-            steamClient!!.disconnect()
+    private fun fetchGameData(steamID: SteamID, appID: GameID) {
+        val id = Integer.valueOf(appID.toString())
+
+        if (id < 1)
+            return
+
+        if (api == null) {
+            api = SteamAPI.apiInstance.create(StoreFront::class.java)
         }
+
+        if (id == 0) {
+            gameData.remove(steamID)
+            return
+        }
+
+
+        api!!.getAppDetails(id).enqueue(object : Callback<Map<Int, StoreFront.AppDetailsResponse>> {
+            override fun onResponse(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, response: Response<Map<Int, StoreFront.AppDetailsResponse>>) {
+
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    val detailsResponse = data!![id]
+
+                    gameData[steamID] = detailsResponse!!.data!!.name!!
+                    Log.d("FriendsListAdapter", "detailsResponse got: " + gameData[steamID])
+                }
+            }
+
+            override fun onFailure(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, t: Throwable) {
+                Log.e("FriendsListAdapter", call.toString())
+            }
+        })
+    }
+
+    fun kill() {
+        running = false
+        connectionListener = null
+        steamClient?.disconnect()
+        stopSelf()
+
+    }
+
+    fun disconnect() {
+        steamClient?.disconnect()
         resetAuthentication()
+        stopSelf()
     }
 
     private fun doSteamWebAuthentication() {
@@ -605,14 +664,14 @@ class SteamService : Service() {
                     val authResult = userAuth.authenticateUser(steamClient!!.steamId.convertToLong().toString(), WebHelpers.UrlEncode(cryptedSessionKey), WebHelpers.UrlEncode(cryptedLoginKey), "POST", "true")
                     token = authResult.get("token").asString()
                     tokenSecure = authResult.get("tokensecure").asString()
-                    Log.i("Steam", "Successfully authenticated: $token secure: $tokenSecure")
 
+                    Log.d("Steam", "Successfully authenticated: $token secure: $tokenSecure")
 
                     // tell our listener and start fetching the webapi key
                     if (connectionListener != null)
                         connectionListener!!.onConnectionStatusUpdate(SteamConnectionListener.STATUS_APIKEY)
-                    buildNotification(SteamConnectionListener.STATUS_APIKEY, true)
 
+                    buildNotification(SteamConnectionListener.STATUS_APIKEY, true)
                     fetchAPIKey()
 
                     // now we're done! tell our listener
@@ -620,8 +679,8 @@ class SteamService : Service() {
                         connectionListener!!.onConnectionStatusUpdate(SteamConnectionListener.STATUS_CONNECTED)
                         connectionListener!!.onConnectionResult(EResult.OK)
                     }
-                    buildNotification(SteamConnectionListener.STATUS_CONNECTED, true)
 
+                    buildNotification(SteamConnectionListener.STATUS_CONNECTED, true)
                     finalizeConnection()
 
                     break
@@ -681,7 +740,20 @@ class SteamService : Service() {
     }
 
     private inner class CheckCallbacksTask : TimerTask() {
+
+        //What a nice attempt.
+        var tickTock = 40
+
         override fun run() {
+
+            tickTock++
+            Log.i("Tick", "Tock -> $tickTock")
+
+            if (tickTock == 50) {
+                getGameData()
+                tickTock = 0
+            }
+
             if (steamClient == null)
                 return
             while (true) {
@@ -696,9 +768,6 @@ class SteamService : Service() {
     }
 
     companion object {
-        const val NOTIFICATION_ID = 49716    //Notification ID for Service
-        const val NOTIFICATION_ID2 = 49717    //Notification ID for Friend add.
-
         var attemptReconnect = false
         var running = false
         var singleton: SteamService? = null
@@ -726,7 +795,6 @@ class SteamService : Service() {
             SteamService.singleton = null
             context.startService(intent)
 
-
             Thread {
                 listener?.onConnectionStatusUpdate(SteamConnectionListener.STATUS_INITIALIZING)
 
@@ -741,7 +809,6 @@ class SteamService : Service() {
                             listener.onConnectionStatusUpdate(SteamConnectionListener.STATUS_FAILURE)
                         }
                     }
-
                 }
 
                 SteamService.singleton!!.processLogon(listener)

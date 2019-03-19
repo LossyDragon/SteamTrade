@@ -7,44 +7,27 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.preference.PreferenceManager
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
-import androidx.appcompat.widget.Toolbar
 import android.util.Log
 import android.view.KeyEvent
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
-
+import android.widget.*
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import com.aegamesi.steamtrade.dialogs.AboutDialog
 import com.aegamesi.steamtrade.dialogs.NewProgressDialog
-import com.aegamesi.steamtrade.fragments.FragmentFriends
-import com.aegamesi.steamtrade.fragments.FragmentLibrary
-import com.aegamesi.steamtrade.fragments.FragmentMe
-import com.aegamesi.steamtrade.fragments.FragmentProfile
-import com.aegamesi.steamtrade.fragments.FragmentSettings
-import com.aegamesi.steamtrade.fragments.FragmentWeb
+import com.aegamesi.steamtrade.fragments.*
 import com.aegamesi.steamtrade.steam.SteamMessageHandler
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamUtil
 import com.bumptech.glide.Glide
-
-import java.util.Locale
-
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
 import de.hdodenhof.circleimageview.CircleImageView
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends
@@ -56,10 +39,10 @@ import uk.co.thomasc.steamkit.steam3.handlers.steamuser.SteamUser
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemSelectedListener {
-    private var instance: MainActivity? = null
     var isActive = false
 
     lateinit var steamFriends: SteamFriends
@@ -77,6 +60,10 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
     private var drawerNotifyCard: androidx.cardview.widget.CardView? = null
     private var drawerNotifyText: TextView? = null
 
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -84,7 +71,6 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
             return
 
         setContentView(R.layout.activity_main)
-        instance = this
 
         // inform the user about SteamGuard restrictions
         if (SteamService.extras != null && SteamService.extras!!.getBoolean("alertSteamGuard", false)) {
@@ -140,7 +126,10 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
             drawerNotifyCard = drawerHeaderView.findViewById(R.id.notify_card)
             drawerNotifyText = drawerHeaderView.findViewById(R.id.notify_text)
             drawerHeaderView.findViewById<View>(R.id.drawer_profile).setOnClickListener {
-                unCheckAllMenuItems(navigationView.menu)
+
+                for (x in 0 until navigationView.menu.size())
+                    navigationView.menu.getItem(x).isChecked = false
+
                 browseToFragment(FragmentMe(), true)
             }
         }
@@ -179,18 +168,9 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
                 FragmentWeb.openPage(this, url, false)
             }
         }
-    }
 
-    /* Un-check NavDrawer selected items */
-    private fun unCheckAllMenuItems(menu: Menu) {
-        val size = menu.size()
-        for (i in 0 until size) {
-            val item = menu.getItem(i)
-            if (item.hasSubMenu()) {
-                unCheckAllMenuItems(item.subMenu)
-            } else {
-                item.isChecked = false
-            }
+        if (this.intent.extras!!.getInt("logout") == 1) {
+            disconnectWithDialog(this, getString(R.string.signingout))
         }
     }
 
@@ -219,6 +199,13 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
     }
 
     private fun updateDrawerProfile() {
+
+        //Glide -> java.lang.IllegalArgumentException: You cannot start a load for a destroyed activity
+        if (this.isDestroyed) {
+            Log.w(TAG, "Activity Destroyed when calling updateDrawerProfile()")
+            return
+        }
+
         val state = steamFriends.personaState
         val name = steamFriends.personaName
         val avatar = SteamUtil.bytesToHex(steamFriends.getFriendAvatar(SteamService.singleton!!.steamClient!!.steamId)).toLowerCase(Locale.US)
@@ -381,7 +368,7 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
                 dialog!!.show()
             }
 
-            override fun onPostExecute(result: Void) {
+            override fun onPostExecute(result: Void?) {
                 super.onPostExecute(result)
                 try {
                     dialog!!.dismiss()

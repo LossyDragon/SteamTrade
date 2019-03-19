@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 
-open class FragmentBase : androidx.fragment.app.Fragment(), SteamMessageHandler {
+open class FragmentBase : Fragment(), SteamMessageHandler {
     protected var abort = false
 
     override fun onCreate(savedInstanceState: Bundle?) {

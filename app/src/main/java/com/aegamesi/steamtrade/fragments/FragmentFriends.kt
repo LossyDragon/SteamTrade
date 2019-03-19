@@ -2,16 +2,14 @@ package com.aegamesi.steamtrade.fragments
 
 import android.os.Bundle
 import android.preference.PreferenceManager
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.appcompat.widget.SearchView
 import android.text.InputType
 import android.view.*
 import android.view.View.OnClickListener
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.fragments.adapters.FriendsListAdapter
 import com.aegamesi.steamtrade.libs.AndroidUtil
@@ -71,6 +69,8 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
                     adapter!!.update(id)
                 else
                     adapter!!.add(id)
+
+                adapter!!.notifyDataSetChanged()
             }
         })
     }

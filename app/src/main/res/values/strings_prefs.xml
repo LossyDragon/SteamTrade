@@ -2,8 +2,6 @@
 <resources>
     <string name="pref_vibrate">Vibrate on Message</string>
     <string name="pref_vibrate_summ">Vibrate when you receive a chat message</string>
-    <string name="persist_notification">Persistent Notification</string>
-    <string name="persist_notification_summ">Unchecking this will tell Android that Ice is low-priority.</string>
     <string name="pref_reconnect">Auto-Reconnect</string>
     <string name="pref_reconnect_summ">Reconnect when disconnected from the Steam network</string>
     <string name="pref_machineauth">Override machineAuth</string>

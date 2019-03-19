@@ -19,6 +19,7 @@ import android.text.style.StyleSpan
 import android.util.LongSparseArray
 import com.aegamesi.steamtrade.MainActivity
 import com.aegamesi.steamtrade.R
+import com.aegamesi.steamtrade.SteamTrade
 import com.aegamesi.steamtrade.steam.DBHelper.ChatEntry
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -84,21 +85,16 @@ class SteamChatManager internal constructor(private val context: Context) {
 
         //We need this to create a Notification Channel ID (on 1st installation), Android O.
         val notificationManager = SteamService.singleton!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notificationChannel = NotificationChannel(Integer.toString(NOTIFICATION_ID), "Chat Notifications", NotificationManager.IMPORTANCE_HIGH)
-        notificationChannel.enableVibration(true)
-        notificationChannel.enableLights(true)
-
-        notificationManager.createNotificationChannel(notificationChannel)
 
         if (unreadMessages.size == 0) {
-            notificationManager.cancel(NOTIFICATION_ID)
+            notificationManager.cancel(SteamTrade.MESSAGE_CHANNEL)
             return
         }
         val steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
                 ?: return
 
         //basics for the notification
-        val builder = NotificationCompat.Builder(SteamService.singleton!!, Integer.toString(NOTIFICATION_ID))
+        val builder = NotificationCompat.Builder(SteamService.singleton!!, SteamTrade.MESSAGE_ID)
                 .setSmallIcon(R.drawable.ic_notify_msg)
 
         builder.priority = NotificationCompat.PRIORITY_HIGH
@@ -211,7 +207,7 @@ class SteamChatManager internal constructor(private val context: Context) {
         val resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
         builder.setContentIntent(resultPendingIntent)
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        notificationManager.notify(SteamTrade.MESSAGE_CHANNEL, builder.build())
     }
 
     private fun makeNotificationLine(title: String?, text: String): SpannableString {
@@ -270,6 +266,5 @@ class SteamChatManager internal constructor(private val context: Context) {
     companion object {
         var CHAT_TYPE_CHAT = 0
         internal var CHAT_TYPE_TRADE = 1
-        private const val NOTIFICATION_ID = 49717
     }
 }

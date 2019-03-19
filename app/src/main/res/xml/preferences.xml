@@ -1,46 +1,36 @@
-<PreferenceScreen
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="pref_reconnect"
         android:summary="@string/pref_reconnect_summ"
-        android:title="@string/pref_reconnect"/>
+        android:title="@string/pref_reconnect" />
 
-    <PreferenceScreen
-        android:title="@string/pref_notification">
+    <PreferenceScreen android:title="@string/pref_notification">
 
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="pref_persist_notification"
-            android:summary="@string/persist_notification_summ"
-            android:title="@string/persist_notification"/>
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"
             android:key="pref_notification_sound"
             android:ringtoneType="notification"
             android:showDefault="true"
             android:showSilent="true"
-            android:title="@string/pref_notification_sound"
-            />
+            android:title="@string/pref_notification_sound" />
 
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_vibrate"
             android:summary="@string/pref_vibrate_summ"
-            android:title="@string/pref_vibrate"/>
-
+            android:title="@string/pref_vibrate" />
 
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_notification_chat"
-            android:title="@string/pref_notification_chat"/>
+            android:title="@string/pref_notification_chat" />
 
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_notification_friendrequest"
-            android:title="@string/pref_notification_friendrequest"/>
+            android:title="@string/pref_notification_friendrequest" />
 
     </PreferenceScreen>
 
@@ -48,36 +38,36 @@
         android:defaultValue="false"
         android:key="pref_chat_compact"
         android:summary="@string/pref_chat_compact_summ"
-        android:title="@string/pref_chat_compact"
-        />
+        android:title="@string/pref_chat_compact" />
+
     <ListPreference
         android:defaultValue="48"
         android:entries="@array/pref_recent_chats_entries"
         android:entryValues="@array/pref_recent_chats_values"
         android:key="pref_recent_chats"
         android:summary="@string/pref_recent_chats_summ"
-        android:title="@string/pref_recent_chats"
-        />
+        android:title="@string/pref_recent_chats" />
+
     <!--Hide blocked users by default-->
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="pref_hide_blocked_users"
-        android:title="@string/pref_hide_blocked_users"
-        />
+        android:title="@string/pref_hide_blocked_users" />
 
-    <PreferenceCategory
-        android:title="Advanced (Know what you're doing!)">
+    <PreferenceCategory android:title="Advanced (Know what you're doing!)">
+
         <EditTextPreference
             android:defaultValue="@string/empty"
             android:dialogTitle="@string/pref_machineauth_prompt"
             android:key="pref_machineauth"
-            android:title="@string/pref_machineauth"/>
+            android:title="@string/pref_machineauth" />
 
         <EditTextPreference
             android:dialogTitle="@string/pref_webapikey_prompt"
             android:key="pref_webapikey"
             android:persistent="false"
             android:summary="@string/pref_webapikey_summary"
-            android:title="@string/pref_webapikey"/>
+            android:title="@string/pref_webapikey" />
+
     </PreferenceCategory>
 </PreferenceScreen>

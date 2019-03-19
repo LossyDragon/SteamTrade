@@ -103,13 +103,11 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
         val userName = SteamService.singleton!!.username
         val avatar = PreferenceManager.getDefaultSharedPreferences(activity).getString("avatar_" + userName!!, "null")
 
-
         setTitle(name)
         nameView.text = name
         statusSpinner.setSelection(stateToIndex(state))
 
         avatarView.setImageResource(R.drawable.default_avatar)
-        Log.i("AvatarView", avatar)
         //FragmentMe profile icon.
         if (avatar != "null" || !avatar.contains("")) {
             Glide.with(activity()!!.applicationContext)
