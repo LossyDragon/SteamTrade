@@ -17,8 +17,11 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import com.aegamesi.steamtrade.dialogs.AboutDialog
 import com.aegamesi.steamtrade.dialogs.NewProgressDialog
 import com.aegamesi.steamtrade.fragments.*
@@ -53,11 +56,11 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
     lateinit var toolbarImageView: CircleImageView
     lateinit var toolbarImageLayout: LinearLayout
     lateinit var progressBar: ProgressBar
-    private var drawerLayout: androidx.drawerlayout.widget.DrawerLayout? = null
+    private var drawerLayout: DrawerLayout? = null
     private var drawerAvatar: ImageView? = null
     private var drawerName: TextView? = null
     private var drawerStatus: TextView? = null
-    private var drawerNotifyCard: androidx.cardview.widget.CardView? = null
+    private var drawerNotifyCard: CardView? = null
     private var drawerNotifyText: TextView? = null
 
     companion object {
@@ -169,7 +172,7 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
             }
         }
 
-        if (this.intent.extras!!.getInt("logout") == 1) {
+        if (intent.extras?.getInt("logout") == 1) {
             disconnectWithDialog(this, getString(R.string.signingout))
         }
     }
@@ -185,7 +188,7 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
         return !abort
     }
 
-    fun browseToFragment(fragment: androidx.fragment.app.Fragment, addToBackStack: Boolean) {
+    fun browseToFragment(fragment: Fragment, addToBackStack: Boolean) {
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
 
@@ -393,15 +396,15 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
         // fragments from intent
         val fragmentName = intent.getStringExtra("fragment")
         if (fragmentName != null) {
-            var fragmentClass: Class<out androidx.fragment.app.Fragment>? = null
+            var fragmentClass: Class<out Fragment>? = null
             try {
-                fragmentClass = Class.forName(fragmentName) as Class<out androidx.fragment.app.Fragment> //Unchecked Cast
+                fragmentClass = Class.forName(fragmentName) as Class<out Fragment> //Unchecked Cast
             } catch (e: ClassNotFoundException) {
                 e.printStackTrace()
             }
 
             if (fragmentClass != null) {
-                var fragment: androidx.fragment.app.Fragment? = null
+                var fragment: Fragment? = null
                 try {
                     fragment = fragmentClass.newInstance()
                 } catch (e: Exception) {
@@ -429,7 +432,7 @@ class MainActivity : AppCompatActivity(), SteamMessageHandler, OnNavigationItemS
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T : androidx.fragment.app.Fragment> getFragmentByClass(clazz: Class<T>): T? {
+    fun <T : Fragment> getFragmentByClass(clazz: Class<T>): T? {
         val fragment = supportFragmentManager.findFragmentByTag(clazz.name)
         return if (fragment == null) null else fragment as T?
     }

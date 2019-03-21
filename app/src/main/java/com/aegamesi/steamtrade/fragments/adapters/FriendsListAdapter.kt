@@ -23,20 +23,30 @@ import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends
 import uk.co.thomasc.steamkit.types.steamid.SteamID
 import java.util.*
 
+class FriendsListAdapter(private val context: Context,
+                         private val clickListener: View.OnClickListener,
+                         friendsList: List<SteamID>?,
+                         private val hasSections: Boolean,
+                         private val hideBlockedUsers: Boolean) : RecyclerView.Adapter<ViewHolder>() {
 
-class FriendsListAdapter(private val context: Context, private val clickListener: View.OnClickListener, friendsList: List<SteamID>?, private val hasSections: Boolean, private val hideBlockedUsers: Boolean) : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
     var recentChats: MutableList<SteamID>? = null
     private var filteredDataset: MutableList<FriendListItem>? = null
     private var dataset: MutableList<FriendListItem>? = null
     private var categoryCounts: MutableMap<FriendListCategory, Int>? = null
     private var filter: String? = null
 
+    private var steamFriends: SteamFriends
+
+
     companion object {
         private const val AVATAR_URL_BASE = "http://media.steampowered.com/steamcommunity/public/images/avatars/"
+        private const val AVATAR_ALL_ZEROS = "0000000000000000000000000000000000000000"
     }
 
     init {
         var listFriends = friendsList
+
+        steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
 
         if (listFriends == null && SteamService.singleton != null && SteamService.singleton!!.steamClient != null) {
             val steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
@@ -54,13 +64,12 @@ class FriendsListAdapter(private val context: Context, private val clickListener
 
         // initialize category count list
         categoryCounts = HashMap()
-        for (category in FriendListCategory.values())
+        for (category in FriendListCategory.values()) {
             categoryCounts!![category] = 0
+        }
 
         // populate friends list
-        if (listFriends != null) {
-            updateList(listFriends)
-        }
+        updateList(listFriends!!)
 
         if (hasSections) {
             // add section headers
@@ -96,15 +105,17 @@ class FriendsListAdapter(private val context: Context, private val clickListener
         for (item in dataset!!)
             if (id == item.steamID)
                 return true
+
         return false
     }
 
     fun add(id: SteamID) {
         val newItem = FriendListItem(id)
         val pos = determineItemPosition(newItem)
-        dataset!!.add(pos, newItem)
-        notifyItemInserted(pos)
 
+        dataset!!.add(pos, newItem)
+
+        notifyItemInserted(pos)
         incrementCategoryCount(newItem.category)
     }
 
@@ -127,10 +138,8 @@ class FriendsListAdapter(private val context: Context, private val clickListener
     }
 
     private fun deincrementCategoryCount(category: FriendListCategory?) {
-        if (!hasSections)
-            return
 
-        if (hideBlockedUsers && category == FriendListCategory.BLOCKED)
+        if (!hasSections || hideBlockedUsers && category == FriendListCategory.BLOCKED)
             return
 
         var categoryCount = categoryCounts!![category]!!
@@ -189,24 +198,29 @@ class FriendsListAdapter(private val context: Context, private val clickListener
         if (position != -1) {
             val item = dataset!![position]
             val oldCategory = item.category
-            //getGameName(item.steamID!!, item.appID!!)
+
             item.update()
             dataset!!.remove(item)
+
             val newPosition = determineItemPosition(item)
             dataset!!.add(newPosition, item)
+
             if (newPosition != position)
                 notifyItemMoved(position, newPosition)
-            notifyItemChanged(newPosition)
-            Log.i("FriendsListAdapter", "Item (" + item.steamID + "|" + item.name + ") updated from " + position + " to " + newPosition)
+
+            Log.i("FriendsListAdapter", "Item (" + item.steamID + "|"
+                    + item.name + ") updated from " + position + " to " + newPosition)
 
             if (oldCategory != item.category) {
                 deincrementCategoryCount(oldCategory)
                 incrementCategoryCount(item.category)
             }
+
+            notifyItemChanged(newPosition)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == 0) ViewHolderSection(parent) else ViewHolderFriend(parent)
     }
 
@@ -374,7 +388,6 @@ class FriendsListAdapter(private val context: Context, private val clickListener
         constructor(steamID: SteamID) {
             this.steamID = steamID
             update()
-            //getGameName(steamID, appID!!)
         }
 
         internal constructor(category: FriendListCategory) {
@@ -383,18 +396,13 @@ class FriendsListAdapter(private val context: Context, private val clickListener
 
         internal fun update() {
 
-            val steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java) ?: return
-
-            game = SteamService.singleton!!.gameData[steamID]
             relationship = steamFriends.getFriendRelationship(steamID)
             state = steamFriends.getFriendPersonaState(steamID)
             name = steamFriends.getFriendPersonaName(steamID)
             nickname = steamFriends.getFriendNickname(steamID)
             lastOnline = steamFriends.getFriendLastLogoff(steamID) * 1000L // convert to millis
 
-            val temp = steamFriends.getFriendGamePlayed(steamID).toString()
-
-            game = if (temp.contains("-")) {
+            game = if (steamFriends.getFriendGamePlayed(steamID).toString().contains("-")) {
                 steamFriends.getFriendGamePlayedName(steamID)
             } else {
                 SteamService.singleton!!.gameData[steamID]
@@ -404,7 +412,7 @@ class FriendsListAdapter(private val context: Context, private val clickListener
 
             if (steamID != null && steamFriends.getFriendAvatar(steamID) != null) {
                 val imgHash = SteamUtil.bytesToHex(steamFriends.getFriendAvatar(steamID)).toLowerCase(Locale.US)
-                if (imgHash != "0000000000000000000000000000000000000000" && imgHash.length == 40)
+                if (imgHash != AVATAR_ALL_ZEROS && imgHash.length == 40)
                     avatarUrl = AVATAR_URL_BASE + imgHash.substring(0, 2) + "/" + imgHash + "_medium.jpg"
             }
         }
@@ -420,7 +428,10 @@ class FriendsListAdapter(private val context: Context, private val clickListener
             if (relationship == EFriendRelationship.RequestInitiator)
                 return FriendListCategory.REQUESTPENDING
             return if (relationship == EFriendRelationship.Friend && state != EPersonaState.Offline) {
-                if (game != null && game!!.isNotEmpty()) FriendListCategory.INGAME else FriendListCategory.ONLINE
+                if (game != null && game!!.isNotEmpty())
+                    FriendListCategory.INGAME
+                else
+                    FriendListCategory.ONLINE
             } else FriendListCategory.OFFLINE
         }
 

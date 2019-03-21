@@ -1,6 +1,5 @@
 package com.aegamesi.steamtrade.steam
 
-import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 import retrofit2.Call
@@ -20,9 +19,7 @@ interface StoreFront {
     }
 
     class Data {
-
         @SerializedName("name")
-        @Expose
         val name: String? = null
     }
 }

@@ -147,8 +147,9 @@ class LoginActivity : AppCompatActivity() {
         }
 
         /* Click Listener for signing in */
-        buttonSignIn.setOnClickListener { attemptLogin() }
-
+        buttonSignIn.setOnClickListener {
+            attemptLogin()
+        }
 
         /* Click Listener for .maFile importing */
         importAccount.setOnClickListener { SteamTwoFactor.promptForMafile(this@LoginActivity, REQUEST_CODE_LOAD_MAFILE) }

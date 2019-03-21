@@ -1,7 +1,5 @@
 package com.aegamesi.steamtrade.steam
 
-import android.util.Log
-
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.HashMap
@@ -56,7 +54,6 @@ object SteamUtil {
         for ((key, value) in bbCodeMap)
             source = source.replace(key.toRegex(), value)
 
-        Log.d("BB", source)
         return source
     }
 

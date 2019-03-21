@@ -191,6 +191,9 @@
     <string name="unknown">\?</string>
     <string name="empty" />
 
+    <!-- Acra -->
+    <string name="acra_crash">Oh no! Ice has crashed.</string>
+
     <!-- \END\ -->
 
 </resources>

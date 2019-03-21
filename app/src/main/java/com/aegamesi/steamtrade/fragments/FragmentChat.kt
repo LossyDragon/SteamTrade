@@ -44,7 +44,7 @@ import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
 class FragmentChat : FragmentBase(), ChatReceiver {
     private var ourID: SteamID? = null
     var chatID: SteamID? = null
-    lateinit var adapter: ChatAdapter
+    private lateinit var adapter: ChatAdapter
     lateinit var chatList: RecyclerView
     private lateinit var layoutManager: LinearLayoutManager
     var cursor: Cursor? = null
@@ -115,10 +115,9 @@ class FragmentChat : FragmentBase(), ChatReceiver {
                 color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_offline)
             }
 
-            Log.d("ICON", avatarUrl)
             // Apply the information we have to the Toolbar.
             setToolBarIconColor(color)
-            setToolBarPicture(avatarUrl!!)
+            setToolBarPicture(avatarUrl)
         }
     }
 

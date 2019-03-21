@@ -1,8 +1,10 @@
 package com.aegamesi.steamtrade.fragments
 
 import android.os.Bundle
+import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.InputType
+import android.util.Log
 import android.view.*
 import android.view.View.OnClickListener
 import android.widget.EditText
@@ -10,13 +12,20 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.recyclerview.widget.RecyclerView
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.fragments.adapters.FriendsListAdapter
 import com.aegamesi.steamtrade.libs.AndroidUtil
+import com.aegamesi.steamtrade.steam.SteamAPI
 import com.aegamesi.steamtrade.steam.SteamChatManager
 import com.aegamesi.steamtrade.steam.SteamChatManager.ChatReceiver
 import com.aegamesi.steamtrade.steam.SteamService
+import com.aegamesi.steamtrade.steam.StoreFront
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EFriendRelationship
+import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.FriendAddedCallback
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.PersonaStateCallback
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
@@ -26,10 +35,18 @@ import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
 class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchView.OnQueryTextListener {
     private var recentChatThreshold = (2 * 24 * 60 * 60 * 1000).toLong() // 2 days
     var adapter: FriendsListAdapter? = null
-    private lateinit var recyclerView: androidx.recyclerview.widget.RecyclerView
+    private lateinit var recyclerView: RecyclerView
+    private var api: StoreFront? = null
+
+    init {
+        if (api == null) {
+            api = SteamAPI.apiInstance.create(StoreFront::class.java)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (abort) {
             return
         }
@@ -40,6 +57,11 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     override fun onResume() {
         super.onResume()
         setTitle(getString(R.string.nav_friends))
+
+        Handler().postDelayed({
+            Log.d("FragmentFriends:Handler()", "firing getGameData()")
+            getGameData()
+        }, 5000)
 
         // update list of recent chats
         recentChatThreshold = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(activity()).getString("pref_recent_chats", "48")!!).toLong()
@@ -65,12 +87,13 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
         msg.handle(PersonaStateCallback::class.java, object : ActionT<PersonaStateCallback>() {
             override fun call(obj: PersonaStateCallback) {
                 val id = obj.friendID
+
+                getGameData()
+
                 if (adapter!!.hasUserID(id))
                     adapter!!.update(id)
                 else
                     adapter!!.add(id)
-
-                adapter!!.notifyDataSetChanged()
             }
         })
     }
@@ -189,5 +212,52 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     override fun onQueryTextChange(newText: String): Boolean {
         adapter!!.filter(newText)
         return true
+    }
+
+    /** Fetch Game Names */
+    fun getGameData() {
+        val steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
+        val friendsList: List<SteamID> = steamFriends.friendList
+
+        val data = SteamService.singleton!!.gameData
+
+        for (x in friendsList) {
+
+            val id = try {
+                steamFriends.getFriendGamePlayed(x).toString().toInt()
+            } catch (e: NumberFormatException) {
+                Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game. " + e.message )
+                -1
+            }
+
+            if(id > 1 && !data.containsKey(x)) {
+                fetchGameData(x, id)
+            }
+            else if (id <= 0) {
+                data.remove(x)
+            }
+        }
+    }
+
+    private fun fetchGameData(steamID: SteamID, id: Int) {
+
+        api!!.getAppDetails(id).enqueue(object : Callback<Map<Int, StoreFront.AppDetailsResponse>> {
+            override fun onResponse(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, response: Response<Map<Int, StoreFront.AppDetailsResponse>>) {
+
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    val detailsResponse = data!![id]
+
+                    SteamService.singleton!!.gameData[steamID] = detailsResponse!!.data!!.name!!
+                    Log.d("SteamServiceGamesResponse", "detailsResponse got: " + SteamService.singleton!!.gameData[steamID])
+
+                    adapter!!.update(steamID)
+                }
+            }
+
+            override fun onFailure(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, t: Throwable) {
+                Log.e("SteamServiceGamesResponse", call.toString())
+            }
+        })
     }
 }

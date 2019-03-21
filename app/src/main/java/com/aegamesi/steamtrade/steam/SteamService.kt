@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.database.sqlite.SQLiteDatabase
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
@@ -57,8 +56,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.lang.NumberFormatException
 import java.util.*
-
 
 // This is the backbone of the app. Stores SteamClient connection, message, chat, and trade handlers, schemas...
 class SteamService : Service() {
@@ -77,7 +76,7 @@ class SteamService : Service() {
     private var _db: SQLiteDatabase? = null
     private var handler: Handler? = null
     private var timerRunning = false
-    private var broadcast: IceBroadcastReceiver? = null
+    //private var broadcast: IceBroadcastReceiver? = null
 
     private var api: StoreFront? = null
     val gameData: MutableMap<SteamID, String> = mutableMapOf()
@@ -139,9 +138,9 @@ class SteamService : Service() {
         buildNotification(SteamConnectionListener.STATUS_CONNECTING, false)
         attemptReconnect = false
 
-        val filter = IntentFilter()
-        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
-        registerReceiver(broadcast, filter)
+        //val filter = IntentFilter()
+        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
+        //registerReceiver(broadcast, filter)
 
         if (listener != null)
             connectionListener = listener
@@ -161,7 +160,7 @@ class SteamService : Service() {
         super.onCreate()
 
         notificationManager = NotificationManagerCompat.from(this)
-        broadcast = IceBroadcastReceiver()
+        //broadcast = IceBroadcastReceiver()
 
         handler = Handler()
         dbHelper = DBHelper(this)
@@ -186,17 +185,15 @@ class SteamService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
-        unregisterReceiver(broadcast)
+        //unregisterReceiver(broadcast)
         stopForeground(true)
         running = false
         singleton = null
 
-        if (_db != null)
-            _db!!.close()
+        _db?.close()
         _db = null
 
-        if (myTimer != null)
-            myTimer!!.cancel()
+        myTimer?.cancel()
         timerRunning = false
     }
 
@@ -584,48 +581,51 @@ class SteamService : Service() {
      */
     //TODO this could use some refinement, but it does the job well enough.
     //TODO the FriendsListAdapter still does not update on-the-fly. The fragment has to be reloaded to show current data.
-    fun getGameData() {
-        val steamFriends = steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
-        val friendsList: List<SteamID> = steamFriends.friendList
+    //fun getGameData() {
+    //    val steamFriends = steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
+    //    val friendsList: List<SteamID> = steamFriends.friendList
+    //
+    //    for (x in friendsList) {
+    //        var id = 0
+    //
+    //        try {
+    //            id = steamFriends.getFriendGamePlayed(x).toString().toInt()
+    //        } catch (e: NumberFormatException) {
+    //            Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game" + e.message )
+    //            id -1
+    //        }
+    //
+    //        if(id != 0 && id > 0) {
+    //            fetchGameData(x, id)
+    //        }
+    //        else if (id == 0 || id < -1) {
+    //        }
+    //    }
+    //}
 
-        for (x in friendsList) {
-            fetchGameData(x, steamFriends.getFriendGamePlayed(x))
-        }
-    }
-
-    private fun fetchGameData(steamID: SteamID, appID: GameID) {
-        val id = Integer.valueOf(appID.toString())
-
-        if (id < 1)
-            return
-
-        if (api == null) {
-            api = SteamAPI.apiInstance.create(StoreFront::class.java)
-        }
-
-        if (id == 0) {
-            gameData.remove(steamID)
-            return
-        }
-
-
-        api!!.getAppDetails(id).enqueue(object : Callback<Map<Int, StoreFront.AppDetailsResponse>> {
-            override fun onResponse(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, response: Response<Map<Int, StoreFront.AppDetailsResponse>>) {
-
-                if (response.isSuccessful) {
-                    val data = response.body()
-                    val detailsResponse = data!![id]
-
-                    gameData[steamID] = detailsResponse!!.data!!.name!!
-                    Log.d("FriendsListAdapter", "detailsResponse got: " + gameData[steamID])
-                }
-            }
-
-            override fun onFailure(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, t: Throwable) {
-                Log.e("FriendsListAdapter", call.toString())
-            }
-        })
-    }
+    //private fun fetchGameData(steamID: SteamID, id: Int) {
+    //
+    //    if (api == null) {
+    //        api = SteamAPI.apiInstance.create(StoreFront::class.java)
+    //    }
+    //
+    //    api!!.getAppDetails(id).enqueue(object : Callback<Map<Int, StoreFront.AppDetailsResponse>> {
+    //        override fun onResponse(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, response: Response<Map<Int, StoreFront.AppDetailsResponse>>) {
+    //
+    //            if (response.isSuccessful) {
+    //                val data = response.body()
+    //                val detailsResponse = data!![id]
+    //
+    //                gameData[steamID] = detailsResponse!!.data!!.name!!
+    //                Log.d("SteamServiceGamesResponse", "detailsResponse got: " + gameData[steamID])
+    //            }
+    //        }
+    //
+    //        override fun onFailure(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, t: Throwable) {
+    //            Log.e("SteamServiceGamesResponse", call.toString())
+    //        }
+    //    })
+    //}
 
     fun kill() {
         running = false
@@ -682,8 +682,8 @@ class SteamService : Service() {
 
                     buildNotification(SteamConnectionListener.STATUS_CONNECTED, true)
                     finalizeConnection()
-
                     break
+
                 } catch (e: Exception) {
                     if (--tries == 0) {
                         Log.e("Steam", "FATAL(ish): Unable to authenticate with SteamWeb. Tried several times")
@@ -741,21 +741,11 @@ class SteamService : Service() {
 
     private inner class CheckCallbacksTask : TimerTask() {
 
-        //What a nice attempt.
-        var tickTock = 40
-
         override fun run() {
-
-            tickTock++
-            Log.i("Tick", "Tock -> $tickTock")
-
-            if (tickTock == 50) {
-                getGameData()
-                tickTock = 0
-            }
 
             if (steamClient == null)
                 return
+
             while (true) {
                 val msg = steamClient!!.getCallback(true) ?: break
                 handleSteamMessage(msg)
