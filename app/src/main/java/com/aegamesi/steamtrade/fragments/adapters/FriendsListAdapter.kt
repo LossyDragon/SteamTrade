@@ -211,12 +211,12 @@ class FriendsListAdapter(private val context: Context,
             Log.i("FriendsListAdapter", "Item (" + item.steamID + "|"
                     + item.name + ") updated from " + position + " to " + newPosition)
 
+            notifyItemChanged(newPosition)
+
             if (oldCategory != item.category) {
                 deincrementCategoryCount(oldCategory)
                 incrementCategoryCount(item.category)
             }
-
-            notifyItemChanged(newPosition)
         }
     }
 

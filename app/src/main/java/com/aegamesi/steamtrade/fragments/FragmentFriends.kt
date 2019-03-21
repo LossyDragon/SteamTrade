@@ -93,7 +93,8 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
                 if (adapter!!.hasUserID(id))
                     adapter!!.update(id)
                 else
-                    adapter!!.add(id)
+                    if (id != SteamService.singleton!!.steamClient!!.steamId)
+                        adapter!!.add(id)
             }
         })
     }
