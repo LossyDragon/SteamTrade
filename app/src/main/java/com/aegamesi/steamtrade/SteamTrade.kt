@@ -6,26 +6,11 @@ import android.app.NotificationManager
 import android.net.Uri
 import android.os.Build
 import android.preference.PreferenceManager
-import android.widget.Toast
 import com.aegamesi.steamtrade.steam.SteamLogcatDebugListener
-import org.acra.ACRA
-import org.acra.annotation.AcraCore
-import org.acra.annotation.AcraHttpSender
-import org.acra.annotation.AcraToast
-import org.acra.data.StringFormat
-import org.acra.sender.HttpSender
 import uk.co.thomasc.steamkit.steam3.CMClient
 import uk.co.thomasc.steamkit.util.logging.DebugLog
 import java.io.File
 
-@AcraCore(reportFormat = StringFormat.JSON,
-        excludeMatchingSharedPreferencesKeys =
-        ["accountinfo_\\w+\$", "webapikey_\\w+\$", "avatar_\\w+\$"])
-@AcraHttpSender(uri = "http://96.19.12.56:8080/Acra/report",
-        basicAuthLogin = BuildConfig.acraAuthLogin,
-        basicAuthPassword = BuildConfig.acraAuthPassword,
-        httpMethod = HttpSender.Method.POST)
-@AcraToast(resText = R.string.acra_crash, length = Toast.LENGTH_LONG)
 class SteamTrade : Application() {
 
     override fun onCreate() {
@@ -43,8 +28,6 @@ class SteamTrade : Application() {
         }
 
         createNotificationChannels()
-
-        ACRA.init(this)
     }
 
     private fun createNotificationChannels() {

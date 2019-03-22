@@ -11,23 +11,18 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.CookieManager
-import android.webkit.JavascriptInterface
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 
 import com.aegamesi.steamtrade.MainActivity
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamTwoFactor
+import kotlinx.android.synthetic.main.fragment_web.*
 
 import java.util.ArrayList
 import java.util.Collections
 
 class FragmentWeb : FragmentBase() {
-    private var webView: WebView? = null
     private var url: String? = null
     private var loadedPage = false
     private var headless = false
@@ -35,17 +30,37 @@ class FragmentWeb : FragmentBase() {
 
     private var steamGuardJavascriptInterface: SteamGuardJavascriptInterface? = null
 
+    companion object {
+
+        private const val PROFILE_BASE_URL = "https://steamcommunity.com/profiles/"
+
+        fun openPage(activity: MainActivity, url: String, headless: Boolean) {
+            openPageWithTabs(activity, url, headless)
+        }
+
+        private fun openPageWithTabs(activity: MainActivity, url: String, headless: Boolean) {
+            val args = Bundle()
+            args.putBoolean("headless", headless)
+            args.putString("url", url)
+            val fragment = FragmentWeb()
+            fragment.arguments = args
+            activity.browseToFragment(fragment, true)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (abort)
-            return
+
+        if (abort) return
 
         setHasOptionsMenu(true)
+        Log.i("FragmentWeb", "created")
 
         val args = arguments
         if (args != null) {
             if (args.containsKey("url"))
                 url = arguments!!.getString("url")
+
             headless = args.getBoolean("headless", false)
         }
     }
@@ -54,36 +69,34 @@ class FragmentWeb : FragmentBase() {
         super.onResume()
         setTitle(getString(R.string.nav_browser))
 
-        if (webView != null) {
-            forceDesktop = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_desktop_mode", false)
-            updateCookies()
+        forceDesktop = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_desktop_mode", false)
+        updateCookies()
 
-            if (!loadedPage) {
-                if (url == null) {
-                    webView!!.loadUrl("https://steamcommunity.com/profiles/" + SteamService.singleton!!.steamClient!!.steamId.convertToLong())
-                } else {
-                    webView!!.loadUrl(url)
-                }
-
-                loadedPage = true
+        if (!loadedPage) {
+            if (url.isNullOrEmpty()) {
+                web_view!!.loadUrl( PROFILE_BASE_URL + SteamService.singleton!!.steamClient!!.steamId.convertToLong())
+            } else {
+                web_view!!.loadUrl(url)
             }
+
+            loadedPage = true
         }
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return activity()!!.layoutInflater.inflate(R.layout.fragment_web, container, false)
+    }
 
-        val view = activity()!!.layoutInflater.inflate(R.layout.fragment_web, container, false)
-        webView = view.findViewById(R.id.web_view)
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        webView!!.webViewClient = SteamWebViewClient()
-        webView!!.webChromeClient = SteamWebChromeClient()
-        webView!!.addJavascriptInterface(SteamGuardJavascriptInterface(), "SGHandler")
-        val webSettings = webView!!.settings
+        web_view!!.webViewClient = SteamWebViewClient()
+        web_view!!.webChromeClient = SteamWebChromeClient()
+        web_view!!.addJavascriptInterface(SteamGuardJavascriptInterface(), "SGHandler")
+        val webSettings = web_view!!.settings
         webSettings.javaScriptEnabled = true
         webSettings.builtInZoomControls = true
-
-        return view
     }
 
     override fun onPause() {
@@ -110,23 +123,23 @@ class FragmentWeb : FragmentBase() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item!!.itemId) {
             R.id.web_back -> {
-                webView!!.goBack()
+                web_view!!.goBack()
                 return true
             }
             R.id.web_forward -> {
-                webView!!.goForward()
+                web_view!!.goForward()
                 return true
             }
             R.id.web_refresh -> {
-                webView!!.reload()
+                web_view!!.reload()
                 return true
             }
             R.id.web_community -> {
-                webView!!.loadUrl("https://steamcommunity.com/profiles/" + SteamService.singleton!!.steamClient!!.steamId.convertToLong())
+                web_view!!.loadUrl("https://steamcommunity.com/profiles/" + SteamService.singleton!!.steamClient!!.steamId.convertToLong())
                 return true
             }
             R.id.web_store -> {
-                webView!!.loadUrl("https://store.steampowered.com/")
+                web_view!!.loadUrl("https://store.steampowered.com/")
                 return true
             }
             R.id.web_toggle_view -> {
@@ -135,7 +148,7 @@ class FragmentWeb : FragmentBase() {
                 forceDesktop = item.isChecked
                 updateCookies()
                 PreferenceManager.getDefaultSharedPreferences(activity()).edit().putBoolean("pref_desktop_mode", forceDesktop).apply()
-                webView!!.reload()
+                web_view!!.reload()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -159,8 +172,8 @@ class FragmentWeb : FragmentBase() {
     }
 
     fun onBackPressed(): Boolean {
-        if (webView != null && webView!!.canGoBack()) {
-            webView!!.goBack()
+        if (web_view != null && web_view!!.canGoBack()) {
+            web_view!!.goBack()
             return true
         }
 
@@ -234,13 +247,13 @@ class FragmentWeb : FragmentBase() {
             private set
         private var returnValue = ""
 
-        val resultValue: String
-            @JavascriptInterface
-            get() {
-                val `val` = returnValue
-                setResultBusy()
-                return `val`
-            }
+        //val resultValue: String
+        //    @JavascriptInterface
+        //    get() {
+        //        val `val` = returnValue
+        //        setResultBusy()
+        //        return `val`
+        //    }
 
         internal fun setResultOkay(value: String?) {
             resultStatus = "ok"
@@ -253,25 +266,9 @@ class FragmentWeb : FragmentBase() {
             resultCode = "" + -1
         }
 
-        internal fun setResultBusy() {
-            returnValue = ""
-            resultStatus = "busy"
-        }
-    }
-
-    companion object {
-
-        fun openPage(activity: MainActivity, url: String, headless: Boolean) {
-            openPageWithTabs(activity, url, headless)
-        }
-
-        private fun openPageWithTabs(activity: MainActivity, url: String, headless: Boolean) {
-            val args = Bundle()
-            args.putBoolean("headless", headless)
-            args.putString("url", url)
-            val fragment = FragmentWeb()
-            fragment.arguments = args
-            activity.browseToFragment(fragment, true)
-        }
+        //internal fun setResultBusy() {
+        //    returnValue = ""
+        //    resultStatus = "busy"
+        //}
     }
 }

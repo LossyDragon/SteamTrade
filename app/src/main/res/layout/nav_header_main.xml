@@ -7,32 +7,30 @@
     android:layout_height="@dimen/nav_header_height"
     android:background="?attr/colorPrimary">
 
-
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/drawer_avatar"
         android:layout_width="80dip"
         android:layout_height="80dip"
-        android:src="@drawable/default_avatar"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/drawer_name"
+        android:layout_marginTop="?actionBarSize"
+        android:src="@drawable/default_avatar"
         app:civ_border_color="@color/steam_online"
-        app:civ_border_width="2dip" />
+        app:civ_border_width="2dip"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/notify_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         card_view:cardBackgroundColor="@color/notification_off"
         card_view:cardCornerRadius="4dp"
         card_view:cardElevation="8dp"
-        card_view:contentPadding="4dp"
-        >
+        card_view:contentPadding="4dp">
 
         <TextView
             android:id="@+id/notify_text"
@@ -43,8 +41,8 @@
             android:textColor="#eee"
             android:textStyle="bold"
             tools:text="0" />
-    </androidx.cardview.widget.CardView>
 
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/drawer_name"
@@ -54,19 +52,19 @@
         android:paddingStart="16sp"
         android:paddingEnd="0sp"
         android:singleLine="true"
-        app:layout_constraintBottom_toTopOf="@+id/drawer_status"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        app:layout_constraintBottom_toTopOf="@+id/drawer_status"
         tools:text="Steam Name" />
 
     <TextView
         android:id="@+id/drawer_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
         android:paddingStart="16sp"
         android:paddingEnd="0sp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:singleLine="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:text="Online" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

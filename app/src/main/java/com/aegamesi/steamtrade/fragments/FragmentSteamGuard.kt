@@ -3,53 +3,44 @@ package com.aegamesi.steamtrade.fragments
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.core.content.FileProvider
-import androidx.appcompat.app.AlertDialog
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
-
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.libs.AndroidUtil
 import com.aegamesi.steamtrade.steam.AccountLoginInfo
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamTwoFactor
-import com.aegamesi.steamtrade.views.SteamGuardCodeView
-
+import kotlinx.android.synthetic.main.fragment_steamguard.*
 import org.json.JSONException
-
-import java.io.BufferedReader
-import java.io.File
-import java.io.IOException
-import java.io.InputStreamReader
-
 import uk.co.thomasc.steamkit.base.generated.SteammessagesTwofactorSteamclient.CTwoFactor_AddAuthenticator_Response
 import uk.co.thomasc.steamkit.base.generated.SteammessagesTwofactorSteamclient.CTwoFactor_FinalizeAddAuthenticator_Response
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult
 import uk.co.thomasc.steamkit.steam3.handlers.steamunifiedmessages.callbacks.UnifiedMessageResponseCallback
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
+import java.io.BufferedReader
+import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
 
 class FragmentSteamGuard : FragmentBase(), OnClickListener {
-
-    private lateinit var steamGuardCodeView: SteamGuardCodeView
-    private lateinit var steamGuardCodeCard: View
-    private lateinit var textSteamGuardStatus: TextView
-    private lateinit var buttonSteamGuardManage: Button
-    private lateinit var buttonRevocationCode: Button
-    private lateinit var buttonPort: Button
 
     var authenticatorFinalizeAttempts = 30
     private var authenticatorFinalizeTime: Long = 0
     private var authenticatorFinalizeCode: String? = null
     private var authenticatorFinalizeSecret: ByteArray? = null
+
+    companion object {
+        private const val REQUEST_CODE_LOAD = 48235
+    }
 
     private val accountLoginInfo: AccountLoginInfo?
         get() {
@@ -59,8 +50,9 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (abort)
-            return
+
+        if (abort) return
+
         Log.i("FragmentSteamGuard", "created")
     }
 
@@ -159,42 +151,38 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_steamguard, container, false)
-        steamGuardCodeView = view.findViewById(R.id.steamguard_code_view)
-        textSteamGuardStatus = view.findViewById(R.id.steamguard_status)
-        buttonSteamGuardManage = view.findViewById(R.id.steamguard_manage)
-        steamGuardCodeCard = view.findViewById(R.id.steamguard_code_card)
-        buttonRevocationCode = view.findViewById(R.id.steamguard_revocation)
-        buttonPort = view.findViewById(R.id.steamguard_port)
+        return inflater.inflate(R.layout.fragment_steamguard, container, false)
+    }
 
-        buttonSteamGuardManage.setOnClickListener(this)
-        buttonRevocationCode.setOnClickListener(this)
-        buttonPort.setOnClickListener(this)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        steamguard_manage.setOnClickListener(this)
+        steamguard_revocation.setOnClickListener(this)
+        steamguard_port.setOnClickListener(this)
 
         updateView()
-        return view
     }
 
     fun updateView() {
-        if (activity() == null)
-            return
-        if (SteamService.singleton == null || SteamService.singleton!!.steamClient == null)
+
+        if (activity() == null ||SteamService.singleton == null || SteamService.singleton!!.steamClient == null)
             return
 
         if (hasAuthenticator()) {
-            textSteamGuardStatus.visibility = View.GONE
-            steamGuardCodeCard.visibility = View.VISIBLE
-            buttonSteamGuardManage.setText(R.string.steamguard_manage_authenticator)
-            buttonPort.setText(R.string.steamguard_export_authenticator)
-            buttonRevocationCode.visibility = View.VISIBLE
+            steamguard_status.visibility = View.GONE
+            steamguard_code_card.visibility = View.VISIBLE
+            steamguard_manage.setText(R.string.steamguard_manage_authenticator)
+            steamguard_port.setText(R.string.steamguard_export_authenticator)
+            steamguard_revocation.visibility = View.VISIBLE
 
-            steamGuardCodeView.setSharedSecret(accountLoginInfo!!.tfaSharedSecret)
+            steamguard_code_view.setSharedSecret(accountLoginInfo!!.tfaSharedSecret)
         } else {
-            textSteamGuardStatus.visibility = View.VISIBLE
-            steamGuardCodeCard.visibility = View.GONE
-            buttonSteamGuardManage.setText(R.string.steamguard_enable_authenticator)
-            buttonPort.setText(R.string.steamguard_import_authenticator)
-            buttonRevocationCode.visibility = View.GONE
+            steamguard_status.visibility = View.VISIBLE
+            steamguard_code_card.visibility = View.GONE
+            steamguard_manage.setText(R.string.steamguard_enable_authenticator)
+            steamguard_port.setText(R.string.steamguard_import_authenticator)
+            steamguard_revocation.visibility = View.GONE
         }
     }
 
@@ -208,7 +196,7 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
     }
 
     override fun onClick(v: View) {
-        if (v === buttonSteamGuardManage) {
+        if (v == steamguard_manage) {
             if (hasAuthenticator()) {
                 //Go to: https://store.steampowered.com/twofactor/manage
                 val url = "https://store.steampowered.com/twofactor/manage/"
@@ -219,7 +207,7 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
                 // activity().steamUser.requestTwoFactorStatus();
             }
         }
-        if (v === buttonRevocationCode) {
+        if (v == steamguard_revocation) {
             val info = accountLoginInfo
 
             if (info != null) {
@@ -231,7 +219,7 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
                 builder.show()
             }
         }
-        if (v === buttonPort) {
+        if (v == steamguard_port) {
             if (hasAuthenticator()) {
                 val info = accountLoginInfo
                 val id = SteamService.singleton!!.steamClient!!.steamId
@@ -269,11 +257,13 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
                     val b = StringBuilder()
                     val `is` = activity()!!.contentResolver.openInputStream(data.data!!)
                     val reader = BufferedReader(InputStreamReader(`is`))
-                    val s: String? = reader.readLine()
-                    while (s != null) {
+                    var s: String?
+
+                    do {
+                        s = reader.readLine()
                         b.append(s)
                         b.append("\n")
-                    }
+                    } while (s != null)
 
                     val accountLoginInfo = accountLoginInfo
                     if (accountLoginInfo != null) {
@@ -301,32 +291,22 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
                             builder.show()
                         }
                     }
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                    val builder = AlertDialog.Builder(activity()!!)
-                    builder.setTitle(R.string.error)
-                    builder.setMessage(e.toString())
-                    builder.setCancelable(true)
-                    builder.setNeutralButton(android.R.string.ok, null)
-                    builder.show()
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                    val builder = AlertDialog.Builder(activity()!!)
-                    builder.setTitle(R.string.error)
-                    builder.setMessage(e.toString())
-                    builder.setCancelable(true)
-                    builder.setNeutralButton(android.R.string.ok, null)
-                    builder.show()
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                    val builder = AlertDialog.Builder(activity()!!)
-                    builder.setTitle(R.string.error)
-                    builder.setMessage(e.toString())
-                    builder.setCancelable(true)
-                    builder.setNeutralButton(android.R.string.ok, null)
-                    builder.show()
+                } catch (e: Exception) {
+                    when(e){
+                        is IOException -> {
+                            e.printStackTrace()
+                            showErrorDialog(e.toString())
+                        }
+                        is JSONException -> {
+                            e.printStackTrace()
+                            showErrorDialog(e.toString())
+                        }
+                        is NumberFormatException -> {
+                            e.printStackTrace()
+                            showErrorDialog(e.toString())
+                        }
+                    }
                 }
-
             }
             if (!success) {
                 Toast.makeText(activity(), R.string.error, Toast.LENGTH_SHORT).show()
@@ -336,7 +316,12 @@ class FragmentSteamGuard : FragmentBase(), OnClickListener {
         return false
     }
 
-    companion object {
-        private const val REQUEST_CODE_LOAD = 48235
+    private fun showErrorDialog(e: String) {
+        val builder = AlertDialog.Builder(activity()!!)
+        builder.setTitle(R.string.error)
+        builder.setMessage(e)
+        builder.setCancelable(true)
+        builder.setNeutralButton(android.R.string.ok, null)
+        builder.show()
     }
 }

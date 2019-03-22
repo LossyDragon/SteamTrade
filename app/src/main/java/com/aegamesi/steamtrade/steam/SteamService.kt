@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.database.sqlite.SQLiteDatabase
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
@@ -18,10 +19,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.TaskStackBuilder
 import com.aegamesi.steamtrade.*
-import com.aegamesi.steamtrade.LogoutReceiver
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.*
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.SteamFriends
 import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.FriendMsgCallback
@@ -45,7 +42,6 @@ import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.CMListCallback
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.ConnectedCallback
 import uk.co.thomasc.steamkit.steam3.steamclient.callbacks.DisconnectedCallback
 import uk.co.thomasc.steamkit.steam3.webapi.WebAPI
-import uk.co.thomasc.steamkit.types.gameid.GameID
 import uk.co.thomasc.steamkit.types.steamid.SteamID
 import uk.co.thomasc.steamkit.util.KeyDictionary
 import uk.co.thomasc.steamkit.util.WebHelpers
@@ -56,7 +52,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.RandomAccessFile
-import java.lang.NumberFormatException
 import java.util.*
 
 // This is the backbone of the app. Stores SteamClient connection, message, chat, and trade handlers, schemas...
@@ -76,9 +71,8 @@ class SteamService : Service() {
     private var _db: SQLiteDatabase? = null
     private var handler: Handler? = null
     private var timerRunning = false
-    //private var broadcast: IceBroadcastReceiver? = null
+    private var broadcast: IceBroadcastReceiver? = null
 
-    private var api: StoreFront? = null
     val gameData: MutableMap<SteamID, String> = mutableMapOf()
 
     private var notificationManager: NotificationManagerCompat? = null
@@ -138,9 +132,9 @@ class SteamService : Service() {
         buildNotification(SteamConnectionListener.STATUS_CONNECTING, false)
         attemptReconnect = false
 
-        //val filter = IntentFilter()
-        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
-        //registerReceiver(broadcast, filter)
+        val filter = IntentFilter()
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
+        registerReceiver(broadcast, filter)
 
         if (listener != null)
             connectionListener = listener
@@ -160,13 +154,15 @@ class SteamService : Service() {
         super.onCreate()
 
         notificationManager = NotificationManagerCompat.from(this)
-        //broadcast = IceBroadcastReceiver()
+        broadcast = IceBroadcastReceiver()
 
         handler = Handler()
         dbHelper = DBHelper(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+
         steamClient = SteamClient()
         chatManager = SteamChatManager(applicationContext)
 
@@ -179,14 +175,13 @@ class SteamService : Service() {
         running = true
         singleton = this
 
-        return super.onStartCommand(intent, flags, startId)
+        //We do not want the OS to re-create the service if it crashes or stops unexpectedly.
+        return Service.START_NOT_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        //unregisterReceiver(broadcast)
-        stopForeground(true)
         running = false
         singleton = null
 
@@ -195,6 +190,9 @@ class SteamService : Service() {
 
         myTimer?.cancel()
         timerRunning = false
+
+        unregisterReceiver(broadcast)
+        stopForeground(true)
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -479,10 +477,12 @@ class SteamService : Service() {
                             stackBuilder.addNextIntent(intent)
                             val resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
 
+                            val result= resources.getQuantityString(R.plurals.friend_request_multi, friendRequests)
+
                             Notification.Builder(this@SteamService, SteamTrade.REQUEST_ID)
                                     .setSmallIcon(R.drawable.ic_notify_friend)
                                     .setContentTitle(getString(R.string.friend_request))
-                                    .setContentText(String.format(getString(R.string.friend_request_multi), friendRequests))
+                                    .setContentText(result)
                                     .setPriority(Notification.PRIORITY_HIGH)
                                     .setVibrate(if (prefs.getBoolean("pref_vibrate", true)) longArrayOf(0, 500, 200, 500, 1000) else longArrayOf(0))
                                     .setSound(Uri.parse(prefs.getString("pref_notification_sound", "DEFAULT_SOUND")))

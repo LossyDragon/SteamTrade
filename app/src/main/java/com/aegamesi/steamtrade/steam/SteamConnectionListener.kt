@@ -12,7 +12,7 @@ interface SteamConnectionListener {
     fun onConnectionStatusUpdate(status: Int)
 
     companion object {
-        const val STATUS_UNKNOWN = 0
+        //const val STATUS_UNKNOWN = 0
         const val STATUS_INITIALIZING = 1
         const val STATUS_CONNECTING = 2
         const val STATUS_LOGON = 3

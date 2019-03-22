@@ -12,7 +12,7 @@
             android:background="@android:color/darker_gray" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/chat"
+            android:id="@+id/chat_view"
             android:layout_width="match_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
@@ -30,7 +30,8 @@
             android:text="@string/friend_is_typing"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
             android:textStyle="italic"
-            android:visibility="visible" />
+            android:visibility="gone"
+            tools:visibility="visible" />
 
         <View
             android:layout_width="match_parent"

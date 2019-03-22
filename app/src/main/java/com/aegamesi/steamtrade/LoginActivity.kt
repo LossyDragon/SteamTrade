@@ -68,6 +68,13 @@ class LoginActivity : AppCompatActivity() {
     internal var progressDialog: NewProgressDialog? = null
     private var active = false
 
+    companion object {
+        private const val REQUEST_CODE_LOAD_MAFILE = 48399
+
+        lateinit var username: String
+        lateinit var password: String
+    }
+
     /* LoginActivity setup*/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,11 +113,11 @@ class LoginActivity : AppCompatActivity() {
         headerNew.setOnClickListener(cardListener)
         headerSaved.setOnClickListener(cardListener)
 
-        val accountsList = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.accounts_list)
+        val accountsList = findViewById<RecyclerView>(R.id.accounts_list)
 
         val accountListAdapter = AccountListAdapter(this)
         accountsList.adapter = accountListAdapter
-        accountsList.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
+        accountsList.layoutManager = LinearLayoutManager(this)
         if (accountListAdapter.itemCount == 0) {
             // only show the new one
             cardListener.onClick(headerNew)
@@ -152,7 +159,9 @@ class LoginActivity : AppCompatActivity() {
         }
 
         /* Click Listener for .maFile importing */
-        importAccount.setOnClickListener { SteamTwoFactor.promptForMafile(this@LoginActivity, REQUEST_CODE_LOAD_MAFILE) }
+        importAccount.setOnClickListener {
+            SteamTwoFactor.promptForMafile(this@LoginActivity, REQUEST_CODE_LOAD_MAFILE)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -476,7 +485,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private inner class AccountListAdapter internal constructor(internal var context: Context) : androidx.recyclerview.widget.RecyclerView.Adapter<AccountListAdapter.AccountViewHolder>() {
+    private inner class AccountListAdapter internal constructor(internal var context: Context) : RecyclerView.Adapter<AccountListAdapter.AccountViewHolder>() {
         internal var accounts: MutableList<AccountLoginInfo>? = null
 
         init {
@@ -550,12 +559,5 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    companion object {
-        private const val REQUEST_CODE_LOAD_MAFILE = 48399
-
-        lateinit var username: String
-        lateinit var password: String
     }
 }

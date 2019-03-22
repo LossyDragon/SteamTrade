@@ -3,37 +3,24 @@ package com.aegamesi.steamtrade.libs
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Rect
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.RecyclerView
 import android.text.format.DateFormat
 import android.util.Base64
 import android.view.View
-
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.RecyclerView
 import com.aegamesi.steamtrade.R
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSerializationContext
-import com.google.gson.JsonSerializer
-
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.io.PrintWriter
-import java.io.UnsupportedEncodingException
+import com.google.gson.*
+import java.io.*
 import java.lang.reflect.Type
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.Calendar
+import java.util.*
 
 object AndroidUtil {
 
-    fun numCompare(x: Double, y: Double): Int {
-        return java.lang.Double.compare(x, y)
-    }
+    //fun numCompare(x: Double, y: Double): Int {
+    //    return java.lang.Double.compare(x, y)
+    //}
 
     fun numCompare(x: Long, y: Long): Int {
         return java.lang.Long.compare(x, y)
@@ -151,12 +138,10 @@ object AndroidUtil {
         }
     }
 
-    //UI based functions, below.
-
     //RecyclerView spacer.
-    class RecyclerViewSpacer(private val spacing: Int) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
+    class RecyclerViewSpacer(private val spacing: Int) : RecyclerView.ItemDecoration() {
 
-        override fun getItemOffsets(outRect: Rect, view: View, parent: androidx.recyclerview.widget.RecyclerView, state: androidx.recyclerview.widget.RecyclerView.State) {
+        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
 
             val position = parent.getChildAdapterPosition(view)
             outRect.left = spacing

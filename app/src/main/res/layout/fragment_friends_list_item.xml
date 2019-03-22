@@ -15,6 +15,7 @@
         android:layout_margin="12dp"
         android:padding="4dp"
         android:src="@drawable/default_avatar"
+        android:visibility="visible"
         app:civ_border_color="@color/steam_offline"
         app:civ_border_width="2dip" />
 
@@ -40,8 +41,8 @@
             android:id="@+id/friend_status"
             android:layout_width="192dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
             android:layout_below="@+id/friend_name"
+            android:layout_alignParentStart="true"
             android:ellipsize="end"
             android:singleLine="true"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
@@ -55,8 +56,8 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/friend_info"
-        android:paddingEnd="16dp"
-        android:paddingStart="0dp">
+        android:paddingStart="0dp"
+        android:paddingEnd="16dp">
 
         <ImageButton
             android:id="@+id/friend_chat_button"

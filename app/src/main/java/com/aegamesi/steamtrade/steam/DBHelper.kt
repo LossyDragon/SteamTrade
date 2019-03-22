@@ -17,12 +17,10 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.regex.Pattern
-import com.aegamesi.steamtrade.steam.DBHelper.ChatEntry
-
-
 
 class DBHelper internal constructor(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
+    @Suppress("RegExpRedundantEscape")
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SQL_CREATE_ENTRIES)
 
@@ -73,8 +71,8 @@ class DBHelper internal constructor(context: Context) : SQLiteOpenHelper(context
         }
     }
 
+    //Update Sqlite database version (Not used yet)
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // no upgrades yet...
         // adapted from http://blog.adamsbros.org/2012/02/28/upgrade-android-sqlite-database/
         var upgradeTo = oldVersion + 1
         while (upgradeTo <= newVersion) {
@@ -117,7 +115,7 @@ class DBHelper internal constructor(context: Context) : SQLiteOpenHelper(context
         private const val DATABASE_NAME = "SteamTrade.db"
 
         // predefined sql query
-        private const val SQL_CREATE_ENTRIES = "CREATE TABLE " + ChatEntry.TABLE + " (" + //
+        private const val SQL_CREATE_ENTRIES = "CREATE TABLE " + ChatEntry.TABLE + " (" +
         ChatEntry.ID + " INTEGER PRIMARY KEY," +
         ChatEntry.COLUMN_TIME + " INTEGER," +
         ChatEntry.COLUMN_OUR_ID + " INTEGER," +

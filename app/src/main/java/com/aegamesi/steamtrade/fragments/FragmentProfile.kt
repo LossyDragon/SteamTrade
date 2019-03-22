@@ -5,31 +5,24 @@ import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.text.Html
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
-
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.libs.GlideImageGetter
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamUtil
 import com.aegamesi.steamtrade.steam.SteamWeb
 import com.bumptech.glide.Glide
-
+import kotlinx.android.synthetic.main.fragment_profile.*
 import org.json.JSONException
 import org.json.JSONObject
-
-import java.util.Locale
-import java.util.regex.Pattern
-
-import de.hdodenhof.circleimageview.CircleImageView
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EFriendRelationship
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult
@@ -40,6 +33,8 @@ import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.SteamLevelC
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 import uk.co.thomasc.steamkit.types.steamid.SteamID
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
+import java.util.*
+import java.util.regex.Pattern
 
 class FragmentProfile : FragmentBase(), View.OnClickListener {
     var id: SteamID? = null
@@ -49,28 +44,20 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
     lateinit var name: String
     private var game: String? = null
     private var avatar: String? = null
-
-    private lateinit var avatarView: CircleImageView
-    private lateinit var nameView: TextView
-    private lateinit var statusView: TextView
-    private lateinit var summaryView: TextView
-    private lateinit var levelView: TextView
-    private lateinit var chatButton: Button
-    private lateinit var addFriendButton: Button
-    private lateinit var removeFriendButton: Button
-    private lateinit var blockFriendButton: Button
-    private lateinit var unblockFriendButton: Button
-    private lateinit var viewSteamButton: Button
-    private lateinit var viewSteamRepButton: Button
-    private lateinit var viewLibraryButton: Button
-
+    
     var profileInfo: ProfileInfoCallback? = null
     var personaInfo: PersonaStateCallback? = null
 
+    companion object {
+        private const val AVATAR_BASE_URL = "http://media.steampowered.com/steamcommunity/public/images/avatars/"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (abort)
-            return
+
+        if (abort) return
+
+        Log.i("FragmentProfile", "created")
 
         if (arguments!!.containsKey("steamId")) {
             id = SteamID(arguments!!.getLong("steamId"))
@@ -129,37 +116,26 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_profile, container, false)
+    }
 
-        val view = inflater.inflate(R.layout.fragment_profile, container, false)
-        avatarView = view.findViewById(R.id.profile_avatar)
-        nameView = view.findViewById(R.id.profile_name)
-        statusView = view.findViewById(R.id.profile_status)
-        summaryView = view.findViewById(R.id.profile_summary)
-        levelView = view.findViewById(R.id.profile_level)
-        chatButton = view.findViewById(R.id.profile_button_chat)
-        removeFriendButton = view.findViewById(R.id.profile_button_remove_friend)
-        addFriendButton = view.findViewById(R.id.profile_button_add_friend)
-        viewSteamButton = view.findViewById(R.id.profile_button_viewsteam)
-        viewSteamRepButton = view.findViewById(R.id.profile_button_viewsteamrep)
-        blockFriendButton = view.findViewById(R.id.profile_button_block_friend)
-        unblockFriendButton = view.findViewById(R.id.profile_button_unblock_friend)
-        viewLibraryButton = view.findViewById(R.id.profile_button_library)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        chatButton.setOnClickListener(this)
-        removeFriendButton.setOnClickListener(this)
-        addFriendButton.setOnClickListener(this)
-        viewSteamButton.setOnClickListener(this)
-        viewSteamRepButton.setOnClickListener(this)
-        blockFriendButton.setOnClickListener(this)
-        unblockFriendButton.setOnClickListener(this)
-        viewLibraryButton.setOnClickListener(this)
+        profile_button_chat.setOnClickListener(this)
+        profile_button_remove_friend.setOnClickListener(this)
+        profile_button_add_friend.setOnClickListener(this)
+        profile_button_viewsteam.setOnClickListener(this)
+        profile_button_viewsteamrep.setOnClickListener(this)
+        profile_button_block_friend.setOnClickListener(this)
+        profile_button_unblock_friend.setOnClickListener(this)
+        profile_button_library.setOnClickListener(this)
 
-        nameView.isSelected = true
-        statusView.isSelected = true
-        summaryView.movementMethod = LinkMovementMethod.getInstance()
+        profile_name.isSelected = true
+        profile_status.isSelected = true
+        profile_summary.movementMethod = LinkMovementMethod.getInstance()
 
         updateView()
-        return view
     }
 
     override fun onStart() {
@@ -187,36 +163,36 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
             avatar = SteamUtil.bytesToHex(personaInfo!!.avatarHash).toLowerCase(Locale.US)
         }
 
-        addFriendButton.setText(if (relationship == EFriendRelationship.RequestRecipient) R.string.friend_accept else R.string.friend_add)
-        unblockFriendButton.setText(if (relationship == EFriendRelationship.RequestRecipient) R.string.friend_ignore else R.string.friend_unblock)
+        profile_button_add_friend.setText(if (relationship == EFriendRelationship.RequestRecipient) R.string.friend_accept else R.string.friend_add)
+        profile_button_unblock_friend.setText(if (relationship == EFriendRelationship.RequestRecipient) R.string.friend_ignore else R.string.friend_unblock)
 
         if (profileInfo != null) {
             val summaryRaw = profileInfo!!.summary
             val summary = SteamUtil.parseBBCode(summaryRaw)
-            val imageGetter = GlideImageGetter(summaryView, summaryView.context)
-            summaryView.text = Html.fromHtml(summary, Html.FROM_HTML_MODE_LEGACY, imageGetter, null)
-            summaryView.movementMethod = LinkMovementMethod()
+            val imageGetter = GlideImageGetter(profile_summary, profile_summary.context)
+            profile_summary.text = Html.fromHtml(summary, Html.FROM_HTML_MODE_LEGACY, imageGetter, null)
+            profile_summary.movementMethod = LinkMovementMethod()
         }
 
         if (steamLevel == -1) {
-            levelView.setText(R.string.unknown)
+            profile_level.setText(R.string.unknown)
         } else {
-            levelView.text = steamLevel.toString()
+            profile_level.text = steamLevel.toString()
         }
 
         setTitle(name)
-        nameView.text = name
+        profile_name.text = name
 
-        if (avatar != null && avatar!!.length == 40 && avatar != "0000000000000000000000000000000000000000") {
-            Glide.with(activity()!!.applicationContext)
-                    .load("http://media.steampowered.com/steamcommunity/public/images/avatars/" + avatar!!.substring(0, 2) + "/" + avatar + "_full.jpg")
-                    .into(avatarView)
-        }
+        Glide.with(activity()!!.applicationContext)
+                .load(AVATAR_BASE_URL + avatar!!.substring(0, 2) + "/" + avatar + "_full.jpg")
+                .placeholder(R.drawable.default_avatar)
+                .error(R.drawable.default_avatar)
+                .into(profile_avatar)
 
-        if (game != null && game!!.isNotEmpty())
-            statusView.text = String.format(getString(R.string.profile_playing_game), game)
+        if (game!!.isEmpty())
+            profile_status.text = String.format(getString(R.string.profile_playing_game), game)
         else
-            statusView.text = state!!.toString()
+            profile_status.text = state!!.toString()
 
         var color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online)
         if (relationship == EFriendRelationship.Blocked || relationship == EFriendRelationship.Ignored || relationship == EFriendRelationship.IgnoredFriend)
@@ -226,9 +202,9 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
         else if (state == EPersonaState.Offline || state == null)
             color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_offline)
 
-        nameView.setTextColor(color)
-        statusView.setTextColor(color)
-        avatarView.borderColor = color
+        profile_name.setTextColor(color)
+        profile_status.setTextColor(color)
+        profile_avatar.borderColor = color
 
         // things to do if we are not friends
         val isFriend = relationship == EFriendRelationship.Friend || relationship == EFriendRelationship.IgnoredFriend
@@ -237,20 +213,20 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
         val isFriendRequest = relationship == EFriendRelationship.RequestRecipient
 
         if (!isFriend) {
-            statusView.text = relationship.toString()
-            addFriendButton.isEnabled = id != null
+            profile_status.text = relationship.toString()
+            profile_button_add_friend.isEnabled = id != null
         }
 
         //Fix relationship if you view yourself.
         if (relationship == EFriendRelationship.None && isSelf)
-            statusView.text = state!!.toString()
+            profile_status.text = state!!.toString()
 
         // visibility of buttons and stuff
-        addFriendButton.visibility = if (!isFriend && !isSelf && !isBlocked) View.VISIBLE else View.GONE
-        removeFriendButton.visibility = if (isFriend && !isSelf) View.VISIBLE else View.GONE
-        chatButton.visibility = if (isFriend && !isSelf && !isBlocked) View.VISIBLE else View.GONE
-        blockFriendButton.visibility = if (!isBlocked && !isSelf) View.VISIBLE else View.GONE
-        unblockFriendButton.visibility = if (isFriendRequest || isBlocked) View.VISIBLE else View.GONE
+        profile_button_add_friend.visibility = if (!isFriend && !isSelf && !isBlocked) View.VISIBLE else View.GONE
+        profile_button_remove_friend.visibility = if (isFriend && !isSelf) View.VISIBLE else View.GONE
+        profile_button_chat.visibility = if (isFriend && !isSelf && !isBlocked) View.VISIBLE else View.GONE
+        profile_button_block_friend.visibility = if (!isBlocked && !isSelf) View.VISIBLE else View.GONE
+        profile_button_unblock_friend.visibility = if (isFriendRequest || isBlocked) View.VISIBLE else View.GONE
     }
 
     private fun requestInfo() {
@@ -275,7 +251,7 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
     }
 
     override fun onClick(view: View) {
-        if (view === removeFriendButton) {
+        if (view == profile_button_remove_friend) {
             val builder = AlertDialog.Builder(activity()!!)
             builder.setMessage(String.format(getString(R.string.friend_remove_message), activity()!!.steamFriends.getFriendPersonaName(id)))
             builder.setTitle(R.string.friend_remove)
@@ -287,11 +263,11 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
             builder.setNegativeButton(android.R.string.cancel) { _, _ -> }
             builder.create().show()
         }
-        if (view === addFriendButton) {
+        if (view == profile_button_add_friend) {
             activity()!!.steamFriends.addFriend(id!!)
             Toast.makeText(activity(), R.string.friend_add_success, Toast.LENGTH_LONG).show()
         }
-        if (view === chatButton) {
+        if (view == profile_button_chat) {
             val fragment = FragmentChat()
             val bundle = Bundle()
             bundle.putLong("steamId", id!!.convertToLong())
@@ -299,22 +275,22 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
             fragment.arguments = bundle
             activity()!!.browseToFragment(fragment, true)
         }
-        if (view === viewSteamButton) {
+        if (view == profile_button_viewsteam) {
             val url = "http://steamcommunity.com/profiles/" + id!!.convertToLong()
             FragmentWeb.openPage(activity()!!, url, false)
         }
-        if (view === viewSteamRepButton) {
+        if (view == profile_button_viewsteamrep) {
             val steamRepUrl = "http://steamrep.com/profiles/" + id!!.convertToLong() + "/"
             val browse = Intent(Intent.ACTION_VIEW, Uri.parse(steamRepUrl))
             startActivity(browse)
         }
-        if (view === blockFriendButton) {
+        if (view == profile_button_block_friend) {
             activity()!!.steamFriends.ignoreFriend(id, true)
         }
-        if (view === unblockFriendButton) {
+        if (view == profile_button_unblock_friend) {
             activity()!!.steamFriends.ignoreFriend(id, false)
         }
-        if (view === viewLibraryButton) {
+        if (view == profile_button_library) {
             val fragment = FragmentLibrary()
             val bundle = Bundle()
             bundle.putLong("id", id!!.convertToLong())

@@ -9,29 +9,30 @@ import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.DefaultItemAnimator
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.fragments.adapters.LibraryAdapter
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamUtil
 import com.aegamesi.steamtrade.steam.SteamWeb
+import kotlinx.android.synthetic.main.fragment_library.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.collections.ArrayList
 
 class FragmentLibrary : FragmentBase(), View.OnClickListener {
-    var adapterLibrary: LibraryAdapter? = null
-    private lateinit var listGames: RecyclerView
-    private var steamID: Long = 0
 
-    lateinit var loadingView: View
+    lateinit var adapterLibrary: LibraryAdapter
+    private var steamID: Long = 0
     var games: ArrayList<LibraryEntry>? = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (abort)
-            return
+
+        if (abort) return
+
+        Log.i("FragmentLibrary", "created")
 
         setHasOptionsMenu(true)
 
@@ -39,6 +40,8 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
             arguments!!.getLong("id")
         else
             SteamService.singleton!!.steamClient!!.steamId.convertToLong()
+
+        adapterLibrary = LibraryAdapter(activity()!!.applicationContext, this)
     }
 
     override fun onResume() {
@@ -47,21 +50,20 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_library, container, false)
+        return inflater.inflate(R.layout.fragment_library, container, false)
+    }
 
-        loadingView = view.findViewById(R.id.offers_loading)
-        listGames = view.findViewById(R.id.games_list)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        listGames.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        listGames.itemAnimator = DefaultItemAnimator()
+        games_list.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        games_list.itemAnimator = DefaultItemAnimator()
 
-        adapterLibrary = LibraryAdapter(activity()!!.applicationContext, this)
-        adapterLibrary!!.setGames(games!!, adapterLibrary!!.currentSort)
-        listGames.setHasFixedSize(true)
 
-        listGames.adapter = adapterLibrary
+        adapterLibrary.setGames(games!!, adapterLibrary.currentSort)
+        games_list.setHasFixedSize(true)
 
-        return view
+        games_list.adapter = adapterLibrary
     }
 
     override fun onStart() {
@@ -86,7 +88,7 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                adapterLibrary!!.filter(newText)
+                adapterLibrary.filter(newText)
                 return true
             }
         })
@@ -95,14 +97,14 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when (item!!.itemId) {
             R.id.menu_library_sort_name -> {
-                if (adapterLibrary != null && adapterLibrary!!.currentSort != LibraryAdapter.SORT_ALPHABETICAL)
-                    adapterLibrary!!.setGames(games!!, LibraryAdapter.SORT_ALPHABETICAL)
+                if (adapterLibrary.currentSort != LibraryAdapter.SORT_ALPHABETICAL)
+                    adapterLibrary.setGames(games!!, LibraryAdapter.SORT_ALPHABETICAL)
                 true
             }
 
             R.id.menu_library_sort_playtime -> {
-                if (adapterLibrary != null && adapterLibrary!!.currentSort != LibraryAdapter.SORT_PLAYTIME)
-                    adapterLibrary!!.setGames(games!!, LibraryAdapter.SORT_PLAYTIME)
+                if (adapterLibrary.currentSort != LibraryAdapter.SORT_PLAYTIME)
+                    adapterLibrary.setGames(games!!, LibraryAdapter.SORT_PLAYTIME)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -176,7 +178,7 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
         }
 
         override fun onPreExecute() {
-            loadingView.visibility = View.VISIBLE
+            offers_loading.visibility = View.VISIBLE
         }
 
         override fun onPostExecute(result: ArrayList<LibraryEntry>) {
@@ -184,10 +186,10 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
                 return
 
             games = result
-            adapterLibrary!!.setGames(games!!, adapterLibrary!!.currentSort)
+            adapterLibrary.setGames(games!!, adapterLibrary.currentSort)
 
             // get rid of UI stuff,
-            loadingView.visibility = View.GONE
+            offers_loading.visibility = View.GONE
         }
     }
 }

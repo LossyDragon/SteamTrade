@@ -19,7 +19,8 @@
             android:contentDescription="@string/DESC_steam_avatar"
             android:padding="2dip"
             android:src="@drawable/default_avatar"
-            app:civ_border_width="2dip"/>
+            android:visibility="visible"
+            app:civ_border_width="2dip" />
 
         <LinearLayout
             android:layout_width="0dip"
@@ -35,7 +36,7 @@
                 android:ellipsize="marquee"
                 android:singleLine="true"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                tools:text="Name"/>
+                tools:text="Name" />
 
             <TextView
                 android:id="@+id/profile_status"
@@ -44,7 +45,7 @@
                 android:ellipsize="marquee"
                 android:singleLine="true"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                tools:text="Status"/>
+                tools:text="Status" />
 
         </LinearLayout>
 
@@ -58,7 +59,7 @@
             android:gravity="center"
             android:textColor="#FFFFFF"
             android:textSize="24sp"
-            tools:text="\?"/>
+            tools:text="\?" />
 
     </LinearLayout>
 
@@ -78,15 +79,15 @@
                 android:id="@+id/profile_button_chat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/chat"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp"
+                android:text="@string/chat" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
                 <!-- Button Group 1 -->
                 <Button
@@ -95,16 +96,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="@string/friend_add"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:text="@string/friend_add" />
 
                 <Button
                     android:id="@+id/profile_button_remove_friend"
                     style="?attr/selectableItemBackground"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/friend_remove"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:text="@string/friend_remove" />
                 <!-- End Group 1 -->
 
                 <!-- Button Group 2 -->
@@ -114,8 +115,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="@string/friend_unblock"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:text="@string/friend_unblock" />
 
                 <Button
                     android:id="@+id/profile_button_block_friend"
@@ -123,8 +124,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:text="@string/friend_block"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:text="@string/friend_block" />
                 <!-- End Group 2 -->
 
             </LinearLayout>
@@ -141,7 +142,7 @@
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/friend_view_steam"/>
+                    android:text="@string/friend_view_steam" />
 
                 <Button
                     android:id="@+id/profile_button_viewsteamrep"
@@ -149,7 +150,7 @@
                     android:layout_width="0dip"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/friend_view_steamrep"/>
+                    android:text="@string/friend_view_steamrep" />
 
             </LinearLayout>
 
@@ -157,24 +158,21 @@
                 android:id="@+id/profile_button_library"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/friend_view_library"/>
+                android:text="@string/friend_view_library" />
 
-            
 
-            <androidx.cardview.widget.CardView
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            <androidx.cardview.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
                 android:layout_marginLeft="4dip"
-                android:layout_marginRight="4dip"
                 android:layout_marginTop="24dp"
+                android:layout_marginRight="4dip"
+                android:layout_marginBottom="4dp"
                 card_view:cardBackgroundColor="@color/dark_background"
                 card_view:cardCornerRadius="4dp"
                 card_view:cardElevation="4dp"
                 card_view:cardUseCompatPadding="true"
-                card_view:contentPadding="0dp"
-                >
+                card_view:contentPadding="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -188,18 +186,18 @@
                         android:layout_marginBottom="16dp"
                         android:text="@string/profile_summary"
                         android:textAppearance="@style/TextAppearance.AppCompat.Title"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/profile_summary"
-                        android:autoLink="web"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
+                        android:autoLink="web"
                         android:hyphenationFrequency="none"
                         android:text="@string/profile_loading_summary"
                         android:textAppearance="?android:attr/textAppearanceSmall"
-                        android:textColor="#FFFFFF"/>
+                        android:textColor="#FFFFFF" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>

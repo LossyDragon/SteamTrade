@@ -12,7 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.fragments.adapters.FriendsListAdapter
 import com.aegamesi.steamtrade.libs.AndroidUtil
@@ -21,6 +21,7 @@ import com.aegamesi.steamtrade.steam.SteamChatManager
 import com.aegamesi.steamtrade.steam.SteamChatManager.ChatReceiver
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.StoreFront
+import kotlinx.android.synthetic.main.fragment_friends.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,21 +36,19 @@ import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
 class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchView.OnQueryTextListener {
     private var recentChatThreshold = (2 * 24 * 60 * 60 * 1000).toLong() // 2 days
     var adapter: FriendsListAdapter? = null
-    private lateinit var recyclerView: RecyclerView
     private var api: StoreFront? = null
 
     init {
-        if (api == null) {
+        if (api == null)
             api = SteamAPI.apiInstance.create(StoreFront::class.java)
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (abort) {
-            return
-        }
+        if (abort) return
+
+        Log.i("FragmentLibrary", "created")
 
         setHasOptionsMenu(true)
     }
@@ -100,19 +99,19 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_friends, container, false)
+    }
 
-        val view = inflater.inflate(R.layout.fragment_friends, container, false)
-        // set up the recycler view
-        recyclerView = view.findViewById(R.id.friends_list)
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity())
-        recyclerView.addItemDecoration(AndroidUtil.RecyclerViewSpacer(12))
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        friends_list.setHasFixedSize(true)
+        friends_list.layoutManager = LinearLayoutManager(activity())
+        friends_list.addItemDecoration(AndroidUtil.RecyclerViewSpacer(12))
 
         val hideBlockedUsers = PreferenceManager.getDefaultSharedPreferences(activity()).getBoolean("pref_hide_blocked_users", true)
         adapter = FriendsListAdapter(activity()!!.applicationContext, this, null, true, hideBlockedUsers)
-        recyclerView.adapter = adapter
-
-        return view
+        friends_list.adapter = adapter
     }
 
     override fun onPause() {
@@ -216,7 +215,7 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     }
 
     /** Fetch Game Names */
-    fun getGameData() {
+    private fun getGameData() {
         val steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
         val friendsList: List<SteamID> = steamFriends.friendList
 
@@ -227,14 +226,13 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
             val id = try {
                 steamFriends.getFriendGamePlayed(x).toString().toInt()
             } catch (e: NumberFormatException) {
-                Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game. " + e.message )
+                Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game. " + e.message)
                 -1
             }
 
-            if(id > 1 && !data.containsKey(x)) {
+            if (id > 1 && !data.containsKey(x)) {
                 fetchGameData(x, id)
-            }
-            else if (id <= 0) {
+            } else if (id <= 0) {
                 data.remove(x)
             }
         }

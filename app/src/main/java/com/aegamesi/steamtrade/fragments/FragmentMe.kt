@@ -2,45 +2,27 @@ package com.aegamesi.steamtrade.fragments
 
 import android.os.Bundle
 import android.preference.PreferenceManager
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
-
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.steam.AccountLoginInfo
 import com.aegamesi.steamtrade.steam.SteamService
 import com.bumptech.glide.Glide
-
+import kotlinx.android.synthetic.main.fragment_me.*
 import uk.co.thomasc.steamkit.base.generated.steamlanguage.EPersonaState
 import uk.co.thomasc.steamkit.steam3.handlers.steamnotifications.callbacks.NotificationUpdateCallback
 import uk.co.thomasc.steamkit.steam3.handlers.steamnotifications.types.NotificationType
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
 
-class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
-    private lateinit var avatarView: ImageView
-    private lateinit var nameView: TextView
-    private lateinit var statusSpinner: Spinner
-    private lateinit var viewProfileButton: Button
-    private lateinit var changeNameButton: Button
-    private lateinit var buttonTwoFactor: Button
-
-    private lateinit var notifyComments: TextView
-    private lateinit var notifyChat: TextView
+class FragmentMe : FragmentBase(), OnClickListener, AdapterView.OnItemSelectedListener {
 
     private var states = intArrayOf(
             1, //online
@@ -53,8 +35,9 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (abort)
-            return
+
+        if (abort) return
+
         Log.i("FragmentMe", "created")
     }
 
@@ -67,29 +50,30 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_me, container, false)
+    }
 
-        val view = inflater.inflate(R.layout.fragment_me, container, false)
-        avatarView = view.findViewById(R.id.profile_avatar)
-        nameView = view.findViewById(R.id.profile_name)
-        statusSpinner = view.findViewById(R.id.profile_status_spinner)
-        viewProfileButton = view.findViewById(R.id.me_view_profile)
-        changeNameButton = view.findViewById(R.id.me_set_name)
-        buttonTwoFactor = view.findViewById(R.id.me_two_factor)
-        notifyChat = view.findViewById(R.id.me_notify_chat)
-        notifyComments = view.findViewById(R.id.me_notify_comments)
-        notifyChat.setOnClickListener(this)
-        notifyComments.setOnClickListener(this)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val adapter = ArrayAdapter.createFromResource(activity()!!, R.array.allowed_states, android.R.layout.simple_spinner_item)
-        adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item)
-        statusSpinner.adapter = adapter
-        statusSpinner.onItemSelectedListener = this
-        changeNameButton.setOnClickListener(this)
-        viewProfileButton.setOnClickListener(this)
-        buttonTwoFactor.setOnClickListener(this)
+        val spinnerAdapter = ArrayAdapter(
+                context!!,
+                android.R.layout.simple_spinner_item,
+                resources.getStringArray(R.array.allowed_states)
+        )
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_item)
+
+        profile_status_spinner.adapter = spinnerAdapter
+        profile_status_spinner.onItemSelectedListener = this
+
+        me_notify_chat.setOnClickListener(this)
+        me_notify_comments.setOnClickListener(this)
+        me_set_name.setOnClickListener(this)
+        me_view_profile.setOnClickListener(this)
+        me_two_factor.setOnClickListener(this)
 
         updateView()
-        return view
     }
 
     fun updateView() {
@@ -104,22 +88,19 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
         val avatar = PreferenceManager.getDefaultSharedPreferences(activity).getString("avatar_" + userName!!, "null")
 
         setTitle(name)
-        nameView.text = name
-        statusSpinner.setSelection(stateToIndex(state))
+        profile_name.text = name
+        profile_status_spinner.setSelection(stateToIndex(state))
 
-        avatarView.setImageResource(R.drawable.default_avatar)
-        //FragmentMe profile icon.
-        if (avatar != "null" || !avatar.contains("")) {
-            Glide.with(activity()!!.applicationContext)
-                    .load(avatar)
-                    .error(R.drawable.default_avatar)
-                    .into(avatarView)
-        }
+        Glide.with(activity()!!.applicationContext)
+                .load(avatar)
+                .placeholder(R.drawable.default_avatar)
+                .error(R.drawable.default_avatar)
+                .into(profile_avatar)
 
-        nameView.setTextColor(ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online))
+        profile_name.setTextColor(ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online))
 
-        updateNotification(notifyChat, R.plurals.notification_messages, NotificationType.OFFLINE_MSGS)
-        updateNotification(notifyComments, R.plurals.notification_comments, NotificationType.COMMENTS)
+        updateNotification(me_notify_chat, R.plurals.notification_messages, NotificationType.OFFLINE_MSGS)
+        updateNotification(me_notify_comments, R.plurals.notification_comments, NotificationType.COMMENTS)
     }
 
     private fun updateNotification(textView: TextView, plural: Int, type: NotificationType) {
@@ -137,23 +118,21 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
     }
 
     override fun onItemSelected(parent: AdapterView<*>, view: View?, pos: Int, id: Long) {
-        if (parent === statusSpinner) {
             activity()!!.steamFriends.personaState = EPersonaState.f(states[pos])
             updateView()
-        }
     }
 
-    override fun onNothingSelected(parent: AdapterView<*>) {}
+    override fun onNothingSelected(parent: AdapterView<*>) { /*Nothing*/ }
 
     override fun onClick(v: View) {
-        if (v === viewProfileButton) {
+        if (v == me_view_profile) {
             val fragment = FragmentProfile()
             val bundle = Bundle()
             bundle.putLong("steamId", SteamService.singleton!!.steamClient!!.steamId.convertToLong())
             fragment.arguments = bundle
             activity()!!.browseToFragment(fragment, true)
         }
-        if (v === changeNameButton) {
+        if (v == me_set_name) {
             //SteamFriends f = activity().steamFriends;
             //f.requestFriendInfo(new SteamID(76561198000739785L));
             val alert = AlertDialog.Builder(activity()!!)
@@ -173,7 +152,7 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
             alert.setNegativeButton(android.R.string.cancel) { _, _ -> }
             alert.show()
         }
-        if (v === buttonTwoFactor) {
+        if (v == me_two_factor) {
             val info = AccountLoginInfo.readAccount(activity()!!, SteamService.singleton!!.username!!)
             if (info?.loginkey == null || info.loginkey!!.isEmpty()) {
                 Toast.makeText(activity(), R.string.steamguard_unavailable, Toast.LENGTH_LONG).show()
@@ -181,10 +160,10 @@ class FragmentMe : FragmentBase(), OnClickListener, OnItemSelectedListener {
                 activity()!!.browseToFragment(FragmentSteamGuard(), true)
             }
         }
-        if (v === notifyChat) {
+        if (v == me_notify_chat) {
             activity()!!.browseToFragment(FragmentFriends(), true)
         }
-        if (v === notifyComments) {
+        if (v == me_notify_comments) {
             val myID = SteamService.singleton!!.steamClient!!.steamId.convertToLong()
             val url = "http://steamcommunity.com/profiles/$myID/commentnotifications"
             FragmentWeb.openPage(activity()!!, url, false)

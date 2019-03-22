@@ -104,7 +104,12 @@
     <string name="change_display_name_prompt">Please enter your new display name:</string>
     <string name="friend_request">Friend Request</string>
     <string name="friend_request_text">%1$s has added you.</string>
-    <string name="friend_request_multi">You have %1$d pending requests.</string>
+
+    <plurals name="friend_request_multi">
+        <item quantity="one">You have %1$d pending request.</item>
+        <item quantity="other">You have %1$d pending requests.</item>
+    </plurals>
+
     <string name="friend_add">Add Friend</string>
     <string name="friend_block">Block</string>
     <string name="friend_unblock">Unblock</string>
@@ -153,7 +158,10 @@
     <string name="prompt_username">Username</string>
 
     <!-- Notifications -->
-    <string name="x_new_messages">%1$d messages</string>
+    <plurals name="x_new_messages">
+        <item quantity="one">%1$d message</item>
+        <item quantity="other">%1$d messages</item>
+    </plurals>
 
     <!-- General -->
     <string name="developed_by_aegamesi">Developed by aegamesi</string>
@@ -190,9 +198,6 @@
     <!-- Placeholders -->
     <string name="unknown">\?</string>
     <string name="empty" />
-
-    <!-- Acra -->
-    <string name="acra_crash">Oh no! Ice has crashed.</string>
 
     <!-- \END\ -->
 

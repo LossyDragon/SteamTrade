@@ -320,12 +320,12 @@ class FriendsListAdapter(private val context: Context,
                 holder.buttonReject.visibility = View.GONE
             }
 
-            holder.imageAvatar.setImageResource(R.drawable.default_avatar)
-            if (p.avatarUrl != null) {
-                Glide.with(context)
-                        .load(p.avatarUrl)
-                        .into(holder.imageAvatar)
-            }
+            Glide.with(context)
+                    .load(p.avatarUrl)
+                    .placeholder(R.drawable.default_avatar)
+                    .error(R.drawable.default_avatar)
+                    .into(holder.imageAvatar)
+
         }
     }
 
@@ -459,7 +459,7 @@ class FriendsListAdapter(private val context: Context,
         }
     }
 
-    private inner class ViewHolderFriend (parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.fragment_friends_list_item, parent, false)) {
+    private inner class ViewHolderFriend(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.fragment_friends_list_item, parent, false)) {
         val imageAvatar: CircleImageView
         val textName: TextView
         val textStatus: TextView
@@ -479,7 +479,7 @@ class FriendsListAdapter(private val context: Context,
         }
     }
 
-    private inner class ViewHolderSection (parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.fragment_friends_list_section, parent, false)) {
+    private inner class ViewHolderSection(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.fragment_friends_list_section, parent, false)) {
         val textTitle: TextView = itemView.findViewById(R.id.section_text)
 
     }

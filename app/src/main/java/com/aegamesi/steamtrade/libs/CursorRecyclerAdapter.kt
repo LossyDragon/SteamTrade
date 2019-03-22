@@ -26,9 +26,8 @@ package com.aegamesi.steamtrade.libs
 
 import android.database.Cursor
 import androidx.recyclerview.widget.RecyclerView
-import com.aegamesi.steamtrade.steam.DBHelper.ChatEntry.Companion.ID
 
-abstract class CursorRecyclerAdapter<VH : androidx.recyclerview.widget.RecyclerView.ViewHolder>(c: Cursor?) : androidx.recyclerview.widget.RecyclerView.Adapter<VH>() {
+abstract class CursorRecyclerAdapter<VH : RecyclerView.ViewHolder>(c: Cursor?) : RecyclerView.Adapter<VH>() {
 
     private var mDataValid: Boolean = false
     private var mCursor: Cursor? = null

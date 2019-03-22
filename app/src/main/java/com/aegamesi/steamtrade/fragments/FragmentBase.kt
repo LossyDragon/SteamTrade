@@ -53,18 +53,15 @@ open class FragmentBase : Fragment(), SteamMessageHandler {
     }
 
     /* Toolbar CircleImageView set picture */
-    fun setToolBarPicture(uri: String?) {
-        if (uri != null) {
-            Glide.with(activity()!!.applicationContext)
-                    .load(uri)
-                    .error(R.drawable.default_avatar)
-                    .into(activity()!!.toolbarImageView)
-        }
+    fun setToolBarPicture(uri: String) {
+        Glide.with(activity()!!.applicationContext)
+                .load(uri)
+                .placeholder(R.drawable.default_avatar)
+                .error(R.drawable.default_avatar)
+                .into(activity()!!.toolbarImageView)
     }
 
-    override fun handleSteamMessage(msg: CallbackMsg) {
-        // by default, do nothing
-    }
+    override fun handleSteamMessage(msg: CallbackMsg) { /*Nothing*/ }
 
     open fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent): Boolean {
         return false

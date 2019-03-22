@@ -1,7 +1,6 @@
 package com.aegamesi.steamtrade.steam
 
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -154,8 +153,6 @@ class SteamChatManager internal constructor(private val context: Context) {
             }
 
             // Add friend's avatar to notification shade.
-
-
             try {
                 bitmap = Glide.with(context)
                         .asBitmap()
@@ -164,9 +161,7 @@ class SteamChatManager internal constructor(private val context: Context) {
                         .submit()
                         .get(5, TimeUnit.SECONDS)
 
-            } catch (ignored: Exception) {
-                /* Nothing */
-            }
+            } catch (ignored: Exception) { /* Nothing */ }
 
             builder.setLargeIcon(bitmap)
 
@@ -180,14 +175,17 @@ class SteamChatManager internal constructor(private val context: Context) {
                 val friendName = steamFriends.getFriendPersonaName(entry)
                 val lastLine = recentMessages.get(entry.convertToLong())
 
-                style.addLine(makeNotificationLine(friendName, lastLine))//New method for BOLD notifications.
+                style.addLine(makeNotificationLine(friendName, lastLine))
 
                 if (friendNames.isNotEmpty())
                     friendNames.append(", ")
+
                 friendNames.append(friendName)
             }
 
-            builder.setContentTitle(String.format(SteamService.singleton!!.getString(R.string.x_new_messages), unreadMessages.size))
+            val result = context.resources.getQuantityString(R.plurals.x_new_messages, unreadMessages.size)
+
+            builder.setContentTitle(result)
             builder.setContentText(friendNames)
             builder.setStyle(style)
         }
