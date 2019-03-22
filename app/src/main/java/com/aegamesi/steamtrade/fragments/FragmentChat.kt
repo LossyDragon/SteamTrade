@@ -65,7 +65,8 @@ class FragmentChat : FragmentBase(), ChatReceiver {
             SteamService.singleton!!.chatManager!!.unreadMessages.remove(chatID!!)
             SteamService.singleton!!.chatManager!!.updateNotification()
 
-            activity()!!.getFragmentByClass(FragmentFriends::class.java)!!.adapter!!.notifyDataSetChanged()
+            if (activity()!!.getFragmentByClass(FragmentFriends::class.java) != null)
+                activity()!!.getFragmentByClass(FragmentFriends::class.java)!!.adapter!!.notifyDataSetChanged()
         }
 
         //Get message history from Steam.
