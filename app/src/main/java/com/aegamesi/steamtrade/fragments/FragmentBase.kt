@@ -8,6 +8,7 @@ import com.aegamesi.steamtrade.MainActivity
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.steam.SteamMessageHandler
 import com.bumptech.glide.Glide
+import kotlinx.android.synthetic.main.custom_toolbar.*
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 
 open class FragmentBase : Fragment(), SteamMessageHandler {
@@ -34,31 +35,31 @@ open class FragmentBase : Fragment(), SteamMessageHandler {
     /* Toolbar Status text */
     fun setTitle(title: CharSequence) {
         if (activity() != null) {
-            activity()!!.toolbarTextView.text = title
+            activity()!!.toolbar_status.text = title
         }
     }
 
     /* Toolbar CircleImageView visibility */
-    fun setToolBarAvatar(vis: Int) {
+    fun setToolBarAvatar(visibility: Int) {
         if (activity() != null) {
-            activity()!!.toolbarImageLayout.visibility = vis
+            activity()!!.toolbar_icon_LL.visibility = visibility
         }
     }
 
     /* Toolbar CircleImageView set color */
     fun setToolBarIconColor(@ColorInt color: Int) {
         if (activity() != null) {
-            activity()!!.toolbarImageView.borderColor = color
+            activity()!!.toolbar_icon.borderColor = color
         }
     }
 
     /* Toolbar CircleImageView set picture */
-    fun setToolBarPicture(uri: String) {
+    fun setToolBarPicture(source: String) {
         Glide.with(activity()!!.applicationContext)
-                .load(uri)
+                .load(source)
                 .placeholder(R.drawable.default_avatar)
                 .error(R.drawable.default_avatar)
-                .into(activity()!!.toolbarImageView)
+                .into(activity()!!.toolbar_icon)
     }
 
     override fun handleSteamMessage(msg: CallbackMsg) { /*Nothing*/ }

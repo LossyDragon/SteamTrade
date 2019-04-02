@@ -11,7 +11,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.text.Html
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import com.bumptech.glide.Glide
@@ -33,9 +32,9 @@ class GlideImageGetter(t: View, private val context: Context) : Html.ImageGetter
     }
 
     override fun getDrawable(source: String): Drawable {
-        Log.i("GlideImageGetter", "Loading: $source")
-        val size = (16.0f * pixelsToDp).toInt()
 
+        //Let's make the emoticons a bit larger. Was: 16.0f
+        val size = (24.0f * pixelsToDp).toInt()
         val drawable = BitmapDrawablePlaceholder()
 
         Glide.with(context)

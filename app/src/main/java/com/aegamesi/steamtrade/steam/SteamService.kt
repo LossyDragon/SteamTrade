@@ -75,6 +75,8 @@ class SteamService : Service() {
 
     val gameData: MutableMap<SteamID, String> = mutableMapOf()
 
+    var myAvatar: String? = null
+
     private var notificationManager: NotificationManagerCompat? = null
 
     private fun resetAuthentication() {
@@ -138,6 +140,7 @@ class SteamService : Service() {
 
         if (listener != null)
             connectionListener = listener
+
         db()
         SteamUtil.webApiKey = null // reset webApiKey
         steamClient!!.connect(true)
@@ -576,57 +579,6 @@ class SteamService : Service() {
         })
     }
 
-    /**
-     * Fetches game names from the SteamWeb API
-     */
-    //TODO this could use some refinement, but it does the job well enough.
-    //TODO the FriendsListAdapter still does not update on-the-fly. The fragment has to be reloaded to show current data.
-    //fun getGameData() {
-    //    val steamFriends = steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
-    //    val friendsList: List<SteamID> = steamFriends.friendList
-    //
-    //    for (x in friendsList) {
-    //        var id = 0
-    //
-    //        try {
-    //            id = steamFriends.getFriendGamePlayed(x).toString().toInt()
-    //        } catch (e: NumberFormatException) {
-    //            Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game" + e.message )
-    //            id -1
-    //        }
-    //
-    //        if(id != 0 && id > 0) {
-    //            fetchGameData(x, id)
-    //        }
-    //        else if (id == 0 || id < -1) {
-    //        }
-    //    }
-    //}
-
-    //private fun fetchGameData(steamID: SteamID, id: Int) {
-    //
-    //    if (api == null) {
-    //        api = SteamAPI.apiInstance.create(StoreFront::class.java)
-    //    }
-    //
-    //    api!!.getAppDetails(id).enqueue(object : Callback<Map<Int, StoreFront.AppDetailsResponse>> {
-    //        override fun onResponse(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, response: Response<Map<Int, StoreFront.AppDetailsResponse>>) {
-    //
-    //            if (response.isSuccessful) {
-    //                val data = response.body()
-    //                val detailsResponse = data!![id]
-    //
-    //                gameData[steamID] = detailsResponse!!.data!!.name!!
-    //                Log.d("SteamServiceGamesResponse", "detailsResponse got: " + gameData[steamID])
-    //            }
-    //        }
-    //
-    //        override fun onFailure(call: Call<Map<Int, StoreFront.AppDetailsResponse>>, t: Throwable) {
-    //            Log.e("SteamServiceGamesResponse", call.toString())
-    //        }
-    //    })
-    //}
-
     fun kill() {
         running = false
         connectionListener = null
@@ -743,8 +695,7 @@ class SteamService : Service() {
 
         override fun run() {
 
-            if (steamClient == null)
-                return
+            if (steamClient == null) return
 
             while (true) {
                 val msg = steamClient!!.getCallback(true) ?: break

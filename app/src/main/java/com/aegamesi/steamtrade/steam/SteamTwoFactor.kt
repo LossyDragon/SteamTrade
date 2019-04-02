@@ -51,6 +51,7 @@ object SteamTwoFactor {
      * @param time_offset The number of seconds to offset the current time by.
      * @return Local time with offset, in seconds.
      */
+    @Suppress("SameParameterValue")
     private fun getCurrentTime(time_offset: Int): Long {
         return System.currentTimeMillis() / 1000L + time_offset
     }

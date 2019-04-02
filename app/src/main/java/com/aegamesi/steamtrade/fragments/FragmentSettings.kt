@@ -9,6 +9,7 @@ import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamUtil
 import com.github.machinarius.preferencefragment.PreferenceFragment
+import kotlinx.android.synthetic.main.activity_main_content.*
 
 class FragmentSettings : PreferenceFragment() {
 

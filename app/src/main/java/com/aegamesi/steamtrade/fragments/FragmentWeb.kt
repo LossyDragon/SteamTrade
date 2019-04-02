@@ -17,6 +17,7 @@ import com.aegamesi.steamtrade.MainActivity
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.steam.SteamService
 import com.aegamesi.steamtrade.steam.SteamTwoFactor
+import kotlinx.android.synthetic.main.activity_main_content.*
 import kotlinx.android.synthetic.main.fragment_web.*
 
 import java.util.ArrayList
@@ -103,7 +104,7 @@ class FragmentWeb : FragmentBase() {
         super.onPause()
 
         if (activity() != null) {
-            activity()!!.progressBar.visibility = View.GONE
+            activity()!!.progress_bar.visibility = View.GONE
         }
     }
 
@@ -227,7 +228,7 @@ class FragmentWeb : FragmentBase() {
     private inner class SteamWebChromeClient : WebChromeClient() {
         override fun onProgressChanged(view: WebView, progress: Int) {
             if (activity() != null) {
-                val loadingBar = activity()!!.progressBar
+                val loadingBar = activity()!!.progress_bar
                 if (progress < 100 && loadingBar.visibility != View.VISIBLE)
                     loadingBar.visibility = View.VISIBLE
                 if (progress == 100)

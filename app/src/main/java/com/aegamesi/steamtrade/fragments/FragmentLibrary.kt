@@ -118,9 +118,14 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
 
             val popup = PopupMenu(activity()!!, view)
             popup.setOnMenuItemClickListener { item ->
-                if (item.itemId == R.id.menu_library_store_page) {
-                    val url = String.format(Locale.US, "http://store.steampowered.com/app/%d/", appId)
-                    FragmentWeb.openPage(activity()!!, url, true)
+
+                when (item.itemId) {
+                    R.id.menu_library_store_page -> {
+                        val url = String.format(Locale.US, "http://store.steampowered.com/app/%d/", appId)
+                        FragmentWeb.openPage(activity()!!, url, true)
+                    }
+                    //R.id.menu_library_idle -> activity()?.steamUser?.setPlayingGame(appId)
+                    //R.id.menu_library_stop_idle -> activity()?.steamUser?.setPlayingGame(0)
                 }
                 true
             }
@@ -157,8 +162,6 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
         var playtime2weeks: Double = 0.toDouble()
         var playtimeForever: Double = 0.toDouble()
         var imgLogoUrl: String
-        //var imgIconUrl: String
-        //var hasCommunityVisibleStats: Boolean = false
 
         init {
             appId = json.optInt("appid", 0)
@@ -166,8 +169,6 @@ class FragmentLibrary : FragmentBase(), View.OnClickListener {
             playtime2weeks = json.optInt("playtime_2weeks", 0).toDouble() / 60.0
             playtimeForever = json.optInt("playtime_forever", 0).toDouble() / 60.0
             imgLogoUrl = json.optString("img_logo_url")
-            //imgIconUrl = json.optString("img_icon_url")
-            //hasCommunityVisibleStats = json.optBoolean("has_community_visible_stats", false)
         }
     }
 

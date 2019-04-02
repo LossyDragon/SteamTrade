@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import android.text.Html
 import android.text.method.LinkMovementMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.TextView
 import com.aegamesi.steamtrade.R
@@ -19,7 +18,6 @@ class AboutDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
-        Log.i(TAG, "--> created")
         @SuppressLint("InflateParams")
         val view = LayoutInflater.from(activity).inflate(R.layout.dialog_about, null)
         val textView = view.findViewById<TextView>(R.id.ice_text_about)
@@ -40,6 +38,4 @@ class AboutDialog : DialogFragment() {
             return AboutDialog()
         }
     }
-
-
 }

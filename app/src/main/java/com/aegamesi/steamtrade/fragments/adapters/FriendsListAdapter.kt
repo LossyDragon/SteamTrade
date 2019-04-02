@@ -37,12 +37,6 @@ class FriendsListAdapter(private val context: Context,
 
     private var steamFriends: SteamFriends
 
-
-    companion object {
-        private const val AVATAR_URL_BASE = "http://media.steampowered.com/steamcommunity/public/images/avatars/"
-        private const val AVATAR_ALL_ZEROS = "0000000000000000000000000000000000000000"
-    }
-
     init {
         var listFriends = friendsList
 
@@ -211,12 +205,14 @@ class FriendsListAdapter(private val context: Context,
             Log.i("FriendsListAdapter", "Item (" + item.steamID + "|"
                     + item.name + ") updated from " + position + " to " + newPosition)
 
+
             notifyItemChanged(newPosition)
 
             if (oldCategory != item.category) {
                 deincrementCategoryCount(oldCategory)
                 incrementCategoryCount(item.category)
             }
+
         }
     }
 
@@ -297,6 +293,9 @@ class FriendsListAdapter(private val context: Context,
                 // friend chat buttons
                 holder.buttonChat.visibility = if (p.relationship == EFriendRelationship.Friend) View.VISIBLE else View.GONE
 
+                if (SteamService.singleton!!.chatManager == null)
+                    return
+
                 if (SteamService.singleton!!.chatManager!!.unreadMessages.contains(p.steamID)) {
                     holder.buttonChat.setColorFilter(resources.getColor(R.color.steam_online, null), Mode.MULTIPLY)
                     holder.buttonChat.setImageResource(R.drawable.ic_comment_processing)
@@ -348,13 +347,15 @@ class FriendsListAdapter(private val context: Context,
             filterText = filterText.toLowerCase()
             filteredDataset!!.clear()
             for (item in dataset!!) {
-                if (item.name == null || item.name!!.toLowerCase().contains(filterText) || item.nickname != null && item.nickname!!.toLowerCase().contains(filterText)) {
+                if (item.name == null || item.name!!.toLowerCase().contains(filterText) ||
+                        item.nickname != null && item.nickname!!.toLowerCase().contains(filterText)) {
                     filteredDataset!!.add(item)
                 }
             }
         }
 
-        if (filterText == null && this.filter != null || filterText != null && this.filter == null || filterText != null && !filterText.equals(this.filter!!, ignoreCase = true)) {
+        if (filterText == null && this.filter != null || filterText != null &&
+                this.filter == null || filterText != null && !filterText.equals(this.filter!!, ignoreCase = true)) {
             this.filter = filterText
             notifyDataSetChanged()
         }
@@ -410,11 +411,7 @@ class FriendsListAdapter(private val context: Context,
 
             category = findCategory()
 
-            if (steamID != null && steamFriends.getFriendAvatar(steamID) != null) {
-                val imgHash = SteamUtil.bytesToHex(steamFriends.getFriendAvatar(steamID)).toLowerCase(Locale.US)
-                if (imgHash != AVATAR_ALL_ZEROS && imgHash.length == 40)
-                    avatarUrl = AVATAR_URL_BASE + imgHash.substring(0, 2) + "/" + imgHash + "_medium.jpg"
-            }
+            avatarUrl = SteamUtil.getAvatar(steamFriends.getFriendAvatar(steamID))
         }
 
         private fun findCategory(): FriendListCategory {

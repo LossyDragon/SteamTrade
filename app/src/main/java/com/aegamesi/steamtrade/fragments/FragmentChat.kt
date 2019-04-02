@@ -8,7 +8,6 @@ import android.os.Handler
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.*
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.fragments.adapters.ChatAdapter
@@ -27,10 +26,9 @@ import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.PersonaStat
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 import uk.co.thomasc.steamkit.types.steamid.SteamID
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
-import java.util.*
 
 class FragmentChat : FragmentBase(), ChatReceiver {
-    
+
     private var ourID: SteamID? = null
     private var timeLastRead: Long = 0
     var chatID: SteamID? = null
@@ -43,7 +41,6 @@ class FragmentChat : FragmentBase(), ChatReceiver {
 
     companion object {
         private const val TAG = "FragmentChat"
-        private const val AVATAR_BASE_URL = "http://media.steampowered.com/steamcommunity/public/images/avatars/"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,19 +75,14 @@ class FragmentChat : FragmentBase(), ChatReceiver {
 
         if (chatID != null) {
             val state = steamFriends.getFriendPersonaState(chatID)
-            var color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online)
+            var color = resources.getColor(R.color.steam_online, null)
 
-            val imgHash = SteamUtil.bytesToHex(steamFriends.getFriendAvatar(chatID)).toLowerCase(Locale.US)
-            val avatarUrl: String
-            if (imgHash != "0000000000000000000000000000000000000000" && imgHash.length == 40) {
-                avatarUrl = AVATAR_BASE_URL + imgHash.substring(0, 2) + "/" + imgHash + "_medium.jpg"
-                setToolBarPicture(avatarUrl)
-            }
+            setToolBarPicture(SteamUtil.getAvatar(steamFriends.getFriendAvatar(chatID)))
 
             if (steamFriends.getFriendGamePlayed(chatID).toString() != "0") {
-                color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_game)
+                color = resources.getColor(R.color.steam_game, null)
             } else if (state == EPersonaState.Offline) {
-                color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_offline)
+                color = resources.getColor(R.color.steam_offline, null)
 
             }
 
@@ -119,7 +111,8 @@ class FragmentChat : FragmentBase(), ChatReceiver {
                 .putLong("chat_read_" + ourID!!.convertToLong() + "_" + chatID!!.convertToLong(), System.currentTimeMillis()).apply()
 
 
-        SteamService.singleton!!.chatManager!!.receivers.add(0, this)
+        if (SteamService.singleton != null && SteamService.singleton!!.chatManager != null)
+            SteamService.singleton!!.chatManager!!.receivers.add(0, this)
 
         //On resume, scroll to bottom.
         chat_view.scrollToPosition(cursor!!.count - 1)
@@ -207,7 +200,7 @@ class FragmentChat : FragmentBase(), ChatReceiver {
 
         // typing timer
         typingHandler = Handler()
-        typingRunnable.run{
+        typingRunnable.run {
             chat_typing.visibility = View.GONE
         }
 
@@ -225,21 +218,19 @@ class FragmentChat : FragmentBase(), ChatReceiver {
     override//Menu onOptions selection, navigate to chosen profile fragment.
     fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item!!.itemId == R.id.friend_profile_page) {
-            val id = chatID
             val fragment = FragmentProfile()
             val bundle = Bundle()
-            bundle.putLong("steamId", id!!.convertToLong())
+            bundle.putLong("steamId", chatID!!.convertToLong())
             fragment.arguments = bundle
             activity()!!.browseToFragment(fragment, true)
         }
         return true
     }
 
-
     //PENDING: commenting out function to test YouTube PiP from making the chat disappear.
     override fun onPause() {
         super.onPause()
-        SteamService.singleton!!.chatManager!!.receivers.remove(this)
+        SteamService.singleton!!.chatManager?.receivers?.remove(this)
     }
 
     override fun onStop() {
@@ -252,11 +243,12 @@ class FragmentChat : FragmentBase(), ChatReceiver {
     private fun fetchCursor(): Cursor? {
         return if (SteamService.singleton != null) {
             // don't group the rows
+            // don't filter by row groups
             SteamService.singleton!!.db().query(
                     ChatEntry.TABLE, // The table to query
                     arrayOf(ChatEntry.ID + " AS _id", ChatEntry.COLUMN_TIME, ChatEntry.COLUMN_MESSAGE, ChatEntry.COLUMN_SENDER),
                     ChatEntry.COLUMN_OUR_ID + " = ? AND " + ChatEntry.COLUMN_OTHER_ID + " = ? AND " + ChatEntry.COLUMN_TYPE + " = ?",
-                    arrayOf("" + ourID!!.convertToLong(), "" + chatID!!.convertToLong(), "" + SteamChatManager.CHAT_TYPE_CHAT), null, null, // don't filter by row groups
+                    arrayOf("" + ourID!!.convertToLong(), "" + chatID!!.convertToLong(), "" + SteamChatManager.CHAT_TYPE_CHAT), null, null,
                     ChatEntry.COLUMN_TIME + " ASC"
             )
         } else null
@@ -264,13 +256,14 @@ class FragmentChat : FragmentBase(), ChatReceiver {
 
     fun updateView() {
 
-        if (activity() == null) return
+        if (activity() == null)
+            return
 
         val friendPersonaName = activity()!!.steamFriends.getFriendPersonaName(chatID)
         adapter.setPersonaNames(activity()!!.steamFriends.personaName, friendPersonaName)
 
         // do colors for profile view
-        adapter.defaultColor = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online)
+        adapter.defaultColor = resources.getColor(R.color.steam_online, null)
     }
 
     override fun receiveChatLine(time: Long, id_us: SteamID, id_them: SteamID, sent_by_us: Boolean, type: Int, message: String): Boolean {
@@ -282,8 +275,8 @@ class FragmentChat : FragmentBase(), ChatReceiver {
                 if (layoutManager.findLastVisibleItemPosition() > cursor!!.count - 3)
                     chat_view.scrollToPosition(cursor!!.count - 1)
 
-                if (!sent_by_us && chat_typing != null)
-                    chat_typing!!.visibility = View.GONE
+                if (!sent_by_us)
+                    chat_typing.visibility = View.GONE
             }
             return true
         }

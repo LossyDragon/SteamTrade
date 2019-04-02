@@ -17,7 +17,8 @@ class SteamTrade : Application() {
         super.onCreate()
         filesDirectory = filesDir
 
-        DebugLog.addListener(SteamLogcatDebugListener())
+        if(BuildConfig.DEBUG)
+            DebugLog.addListener(SteamLogcatDebugListener())
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         if (prefs.contains("cm_server_list")) {

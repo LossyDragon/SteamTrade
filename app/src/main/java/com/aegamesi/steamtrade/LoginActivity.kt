@@ -4,15 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
 import android.preference.PreferenceManager
-import com.google.android.material.textfield.TextInputLayout
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import android.text.InputType.TYPE_CLASS_TEXT
+import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,59 +15,36 @@ import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
-
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.aegamesi.steamtrade.dialogs.EulaDialog
-import com.aegamesi.steamtrade.dialogs.SteamGuardDialog
 import com.aegamesi.steamtrade.dialogs.NewProgressDialog
-import com.aegamesi.steamtrade.steam.AccountLoginInfo
-import com.aegamesi.steamtrade.steam.SteamConnectionListener
-import com.aegamesi.steamtrade.steam.SteamService
-import com.aegamesi.steamtrade.steam.SteamTwoFactor
-import com.aegamesi.steamtrade.steam.SteamUtil
+import com.aegamesi.steamtrade.dialogs.SteamGuardDialog
+import com.aegamesi.steamtrade.steam.*
 import com.bumptech.glide.Glide
-
+import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.activity_login.*
 import org.json.JSONException
-
+import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult
+import uk.co.thomasc.steamkit.base.generated.steamlanguage.EUniverse
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.HashSet
-import java.util.Locale
-
-import de.hdodenhof.circleimageview.CircleImageView
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EResult
-import uk.co.thomasc.steamkit.base.generated.steamlanguage.EUniverse
-
-import android.text.InputType.TYPE_CLASS_TEXT
-import android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+import java.util.*
 
 class LoginActivity : AppCompatActivity() {
-    private var needTwoFactor = false
-
-    private var rememberInfoCheckbox: CheckBox? = null
-    private var textUsername: EditText? = null
-    private var textPassword: EditText? = null
-    private var textSteamguard: EditText? = null
-    private var steamGuardField: TextInputLayout? = null
-    private var viewSaved: View? = null
-    private var viewNew: View? = null
-
-    private var connectionListener: ConnectionListener? = null
 
     internal var progressDialog: NewProgressDialog? = null
+    private var needTwoFactor = false
+    private var connectionListener: ConnectionListener? = null
     private var active = false
 
     companion object {
         private const val REQUEST_CODE_LOAD_MAFILE = 48399
-
-        lateinit var username: String
-        lateinit var password: String
     }
 
     /* LoginActivity setup*/
@@ -90,9 +62,7 @@ class LoginActivity : AppCompatActivity() {
             eulaDialog.show(supportFragmentManager, "tag")
 
         connectionListener = ConnectionListener()
-
-        viewNew = findViewById(R.id.layout_new)
-        viewSaved = findViewById(R.id.layout_saved)
+        
         val headerNew = findViewById<Button>(R.id.btn_header_new)
         val headerSaved = findViewById<Button>(R.id.btn_header_saved)
         val importAccount = findViewById<Button>(R.id.btn_import_account)
@@ -103,10 +73,10 @@ class LoginActivity : AppCompatActivity() {
             val isSaved = view === headerSaved
 
             headerNew.visibility = if (isNew) View.GONE else View.VISIBLE
-            viewNew!!.visibility = if (isNew) View.VISIBLE else View.GONE
+            layout_new!!.visibility = if (isNew) View.VISIBLE else View.GONE
 
             headerSaved.visibility = if (isSaved) View.GONE else View.VISIBLE
-            viewSaved!!.visibility = if (isSaved) View.VISIBLE else View.GONE
+            layout_saved!!.visibility = if (isSaved) View.VISIBLE else View.GONE
         }
 
         /* New & Saved button Click Listeners */
@@ -127,17 +97,12 @@ class LoginActivity : AppCompatActivity() {
         }
 
         /* Login form preparation */
-        rememberInfoCheckbox = findViewById(R.id.remember)
-        textSteamguard = findViewById(R.id.steamguard)
-        textSteamguard!!.visibility = View.GONE
-        textUsername = findViewById(R.id.username)
-        textPassword = findViewById(R.id.password)
-        steamGuardField = findViewById(R.id.steamguard_field)
-        steamGuardField!!.visibility = View.INVISIBLE
+        steamguard!!.visibility = View.GONE
+        steamguard_field!!.visibility = View.INVISIBLE
         val buttonSignIn = findViewById<Button>(R.id.sign_in_button)
 
         /* Keyboard Stuff */
-        textPassword!!.setOnEditorActionListener { _, id, _ ->
+        password!!.setOnEditorActionListener { _, id, _ ->
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
                 attemptLogin()
                 return@setOnEditorActionListener true
@@ -148,8 +113,8 @@ class LoginActivity : AppCompatActivity() {
         /* Show legacy information */
         if (accountListAdapter.itemCount == 0) {
             if (getPreferences(Context.MODE_PRIVATE).getBoolean("rememberDetails", true)) {
-                textUsername!!.setText(getPreferences(Context.MODE_PRIVATE).getString("username", ""))
-                textPassword!!.setText(getPreferences(Context.MODE_PRIVATE).getString("password", ""))
+                username!!.setText(getPreferences(Context.MODE_PRIVATE).getString("username", ""))
+                password!!.setText(getPreferences(Context.MODE_PRIVATE).getString("password", ""))
             }
         }
 
@@ -286,35 +251,32 @@ class LoginActivity : AppCompatActivity() {
 
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        val activeNetwork: NetworkInfo?
-        activeNetwork = cm.activeNetworkInfo
-
-        if (activeNetwork == null || !activeNetwork.isConnected)
+        if (!cm.activeNetworkInfo.isConnected)
             Toast.makeText(this, R.string.not_connected_to_internet, Toast.LENGTH_LONG).show()
 
-        textUsername!!.error = null
-        textPassword!!.error = null
-        textSteamguard!!.error = null
+        username!!.error = null
+        password!!.error = null
+        steamguard!!.error = null
 
         // Store values at the time of the login attempt.
-        username = textUsername!!.text.toString()
-        password = textPassword!!.text.toString()
-        var steamGuard: String? = textSteamguard!!.text.toString()
+        val user = username!!.text.toString()
+        val pass = password!!.text.toString()
+        var steamGuard: String? = steamguard!!.text.toString()
         steamGuard = steamGuard!!.trim { it <= ' ' }.toUpperCase(Locale.US)
 
         var cancel = false
         var focusView: View? = null
 
         // Check for a valid password.
-        if (TextUtils.isEmpty(password)) {
-            textPassword!!.error = getString(R.string.error_field_required)
-            focusView = textPassword
+        if (TextUtils.isEmpty(pass)) {
+            password!!.error = getString(R.string.error_field_required)
+            focusView = password
             cancel = true
         }
         // Check for a valid username.
-        if (TextUtils.isEmpty(username)) {
-            textUsername!!.error = getString(R.string.error_field_required)
-            focusView = textUsername
+        if (TextUtils.isEmpty(user)) {
+            username!!.error = getString(R.string.error_field_required)
+            focusView = username
             cancel = true
         }
         if (TextUtils.isEmpty(steamGuard))
@@ -329,10 +291,10 @@ class LoginActivity : AppCompatActivity() {
 
             // start the logging in progress
             val bundle = Bundle()
-            bundle.putString("username", username)
-            bundle.putString("password", password)
+            bundle.putString("username", user)
+            bundle.putString("password", pass)
             bundle.putString("steamguard", steamGuard)
-            bundle.putBoolean("remember", rememberInfoCheckbox!!.isChecked)
+            bundle.putBoolean("remember", remember!!.isChecked)
             bundle.putBoolean("twofactor", needTwoFactor)
             connectionListener!!.handleResult = true
             SteamService.attemptLogon(this@LoginActivity, connectionListener, bundle)
@@ -366,26 +328,26 @@ class LoginActivity : AppCompatActivity() {
         SteamService.connectionListener = connectionListener
     }
 
-    private fun showAndFillManualLogin(username: String?) {
+    private fun showAndFillManualLogin(user: String?) {
 
         // Set login view to manual sign in.
-        viewNew!!.visibility = View.VISIBLE
-        viewSaved!!.visibility = View.GONE
+        layout_new!!.visibility = View.VISIBLE
+        layout_saved!!.visibility = View.GONE
 
         //Get username information.
-        val info = AccountLoginInfo.readAccount(this, username!!)
+        val info = AccountLoginInfo.readAccount(this, user!!)
         if (info != null) {
-            textUsername!!.setText(info.username)
-            textPassword!!.setText(info.password)
+            username!!.setText(info.username)
+            password!!.setText(info.password)
 
             if (info.hasAuthenticator) {
                 //Show steamguard field.
-                textSteamguard!!.visibility = View.VISIBLE
+                steamguard!!.visibility = View.VISIBLE
                 val code = SteamTwoFactor.generateAuthCodeForTime(info.tfaSharedSecret, SteamTwoFactor.currentTime)
-                textSteamguard!!.setText(code)
+                steamguard!!.setText(code)
             }
         }
-        rememberInfoCheckbox!!.isChecked = true
+        remember!!.isChecked = true
     }
 
     private inner class ConnectionListener : SteamConnectionListener {
@@ -410,23 +372,23 @@ class LoginActivity : AppCompatActivity() {
                     // maybe change error to "login key expired, log in again" if using loginkey
                     if (SteamService.extras != null && SteamService.extras!!.getString("loginkey") != null) {
                         Toast.makeText(this@LoginActivity, R.string.error_loginkey_expired, Toast.LENGTH_LONG).show()
-                        textPassword!!.error = getString(R.string.error_loginkey_expired)
+                        password!!.error = getString(R.string.error_loginkey_expired)
 
                         val username = SteamService.extras!!.getString("username")
                         showAndFillManualLogin(username)
                     } else {
-                        textPassword!!.error = getString(R.string.error_incorrect_password)
-                        textPassword!!.requestFocus()
+                        password!!.error = getString(R.string.error_incorrect_password)
+                        password!!.requestFocus()
                     }
                 } else if (result == EResult.ConnectFailed) {
                     Toast.makeText(this@LoginActivity, R.string.cannot_connect_to_steam, Toast.LENGTH_SHORT).show()
                 } else if (result == EResult.ServiceUnavailable) {
                     Toast.makeText(this@LoginActivity, R.string.cannot_auth_with_steamweb, Toast.LENGTH_LONG).show()
                 } else if (result == EResult.AccountLogonDenied || result == EResult.AccountLogonDeniedNoMail || result == EResult.AccountLogonDeniedVerifiedEmailRequired || result == EResult.AccountLoginDeniedNeedTwoFactor) {
-                    steamGuardField!!.visibility = View.VISIBLE
-                    textSteamguard!!.visibility = View.VISIBLE
-                    steamGuardField!!.error = getString(R.string.error_steamguard_required)
-                    textSteamguard!!.requestFocus()
+                    steamguard_field!!.visibility = View.VISIBLE
+                    steamguard!!.visibility = View.VISIBLE
+                    steamguard_field!!.error = getString(R.string.error_steamguard_required)
+                    steamguard!!.requestFocus()
                     Toast.makeText(this@LoginActivity, "SteamGuard: " + result.name, Toast.LENGTH_LONG).show()
 
                     val username = SteamService.extras!!.getString("username")
@@ -434,9 +396,9 @@ class LoginActivity : AppCompatActivity() {
 
                     needTwoFactor = result == EResult.AccountLoginDeniedNeedTwoFactor
                 } else if (result == EResult.InvalidLoginAuthCode || result == EResult.TwoFactorCodeMismatch) {
-                    textSteamguard!!.visibility = View.VISIBLE
-                    textSteamguard!!.error = getString(R.string.error_incorrect_steamguard)
-                    textSteamguard!!.requestFocus()
+                    steamguard!!.visibility = View.VISIBLE
+                    steamguard!!.error = getString(R.string.error_incorrect_steamguard)
+                    steamguard!!.requestFocus()
 
                     val username = SteamService.extras!!.getString("username")
                     showAndFillManualLogin(username)
@@ -550,12 +512,11 @@ class LoginActivity : AppCompatActivity() {
                     builder.setMessage(String.format(getString(R.string.login_confirm_delete_account), account.username))
                     builder.show()
                 }
-                if (view.id == R.id.account) {
-                    loginWithSavedAccount(account)
-                }
-                if (view.id == R.id.account_key) {
-                    SteamGuardDialog.newInstance(account.tfaSharedSecret).show(supportFragmentManager, SteamGuardDialog.TAG)
 
+                when (view.id) {
+                    R.id.account -> loginWithSavedAccount(account)
+                    R.id.account_key ->
+                        SteamGuardDialog.newInstance(account.tfaSharedSecret).show(supportFragmentManager, SteamGuardDialog.TAG)
                 }
             }
         }

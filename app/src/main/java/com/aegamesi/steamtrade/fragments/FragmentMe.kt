@@ -10,7 +10,6 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.steam.AccountLoginInfo
 import com.aegamesi.steamtrade.steam.SteamService
@@ -77,27 +76,32 @@ class FragmentMe : FragmentBase(), OnClickListener, AdapterView.OnItemSelectedLi
     }
 
     fun updateView() {
-        if (activity() == null)
+        if (activity()!!.isDestroyed || SteamService.singleton == null ||
+                SteamService.singleton?.steamClient == null) {
             return
-        if (SteamService.singleton == null || SteamService.singleton!!.steamClient == null)
-            return
+        }
+
+
+        profile_avatar.setImageResource(R.drawable.default_avatar)
 
         val state = activity()!!.steamFriends.personaState
         val name = activity()!!.steamFriends.personaName
-        val userName = SteamService.singleton!!.username
-        val avatar = PreferenceManager.getDefaultSharedPreferences(activity).getString("avatar_" + userName!!, "null")
+
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val avatar = sharedPreferences.getString("avatar_" + SteamService.singleton!!.username, "")
 
         setTitle(name)
         profile_name.text = name
         profile_status_spinner.setSelection(stateToIndex(state))
 
+        Log.d("FragmentMe", "Loading avatar: $avatar")
+
+        //TODO: This has trouble loading avatar first time
         Glide.with(activity()!!.applicationContext)
                 .load(avatar)
-                .placeholder(R.drawable.default_avatar)
-                .error(R.drawable.default_avatar)
                 .into(profile_avatar)
 
-        profile_name.setTextColor(ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online))
+        profile_name.setTextColor(resources.getColor(R.color.steam_online, null))
 
         updateNotification(me_notify_chat, R.plurals.notification_messages, NotificationType.OFFLINE_MSGS)
         updateNotification(me_notify_comments, R.plurals.notification_comments, NotificationType.COMMENTS)
@@ -107,7 +111,10 @@ class FragmentMe : FragmentBase(), OnClickListener, AdapterView.OnItemSelectedLi
         val num = activity()!!.steamNotifications.notificationCounts[type]!!
         val text = resources.getQuantityString(plural, num, num)
         textView.text = text
-        textView.setTextColor(ContextCompat.getColor(activity()!!.applicationContext, if (num == 0) R.color.notification_text_off else R.color.notification_text_on))
+        textView.setTextColor(resources.getColor(
+                if (num == 0) R.color.notification_text_off
+                else R.color.notification_text_on,
+                null))
     }
 
     private fun stateToIndex(state: EPersonaState): Int {
@@ -125,48 +132,51 @@ class FragmentMe : FragmentBase(), OnClickListener, AdapterView.OnItemSelectedLi
     override fun onNothingSelected(parent: AdapterView<*>) { /*Nothing*/ }
 
     override fun onClick(v: View) {
-        if (v == me_view_profile) {
-            val fragment = FragmentProfile()
-            val bundle = Bundle()
-            bundle.putLong("steamId", SteamService.singleton!!.steamClient!!.steamId.convertToLong())
-            fragment.arguments = bundle
-            activity()!!.browseToFragment(fragment, true)
-        }
-        if (v == me_set_name) {
-            //SteamFriends f = activity().steamFriends;
-            //f.requestFriendInfo(new SteamID(76561198000739785L));
-            val alert = AlertDialog.Builder(activity()!!)
-            alert.setTitle(R.string.change_display_name)
-            alert.setMessage(R.string.change_display_name_prompt)
-            val input = EditText(activity())
-            input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
-            input.setText(activity()!!.steamFriends.personaName)
-            alert.setView(input)
-            alert.setPositiveButton(R.string.change) { _, _ ->
-                val name = input.text.toString().trim { it <= ' ' }
-                if (name.isNotEmpty()) {
-                    activity()!!.steamFriends.personaName = name
-                    updateView()
+
+        when (v) {
+            me_view_profile -> {
+                val fragment = FragmentProfile()
+                val bundle = Bundle()
+                bundle.putLong("steamId", SteamService.singleton!!.steamClient!!.steamId.convertToLong())
+                fragment.arguments = bundle
+                activity()!!.browseToFragment(fragment, true)
+            }
+            me_set_name -> {
+                //SteamFriends f = activity().steamFriends;
+                //f.requestFriendInfo(new SteamID(76561198000739785L));
+                val alert = AlertDialog.Builder(activity()!!)
+                alert.setTitle(R.string.change_display_name)
+                alert.setMessage(R.string.change_display_name_prompt)
+                val input = EditText(activity())
+                input.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+                input.setText(activity()!!.steamFriends.personaName)
+                alert.setView(input)
+                alert.setPositiveButton(R.string.change) { _, _ ->
+                    val name = input.text.toString().trim { it <= ' ' }
+                    if (name.isNotEmpty()) {
+                        activity()!!.steamFriends.personaName = name
+                        updateView()
+                    }
+                }
+                alert.setNegativeButton(android.R.string.cancel) { _, _ -> }
+                alert.show()
+            }
+            me_two_factor -> {
+                val info = AccountLoginInfo.readAccount(activity()!!, SteamService.singleton!!.username!!)
+                if (info?.loginkey == null || info.loginkey!!.isEmpty()) {
+                    Toast.makeText(activity(), R.string.steamguard_unavailable, Toast.LENGTH_LONG).show()
+                } else {
+                    activity()!!.browseToFragment(FragmentSteamGuard(), true)
                 }
             }
-            alert.setNegativeButton(android.R.string.cancel) { _, _ -> }
-            alert.show()
-        }
-        if (v == me_two_factor) {
-            val info = AccountLoginInfo.readAccount(activity()!!, SteamService.singleton!!.username!!)
-            if (info?.loginkey == null || info.loginkey!!.isEmpty()) {
-                Toast.makeText(activity(), R.string.steamguard_unavailable, Toast.LENGTH_LONG).show()
-            } else {
-                activity()!!.browseToFragment(FragmentSteamGuard(), true)
+            me_notify_chat -> {
+                activity()!!.browseToFragment(FragmentFriends(), true)
             }
-        }
-        if (v == me_notify_chat) {
-            activity()!!.browseToFragment(FragmentFriends(), true)
-        }
-        if (v == me_notify_comments) {
-            val myID = SteamService.singleton!!.steamClient!!.steamId.convertToLong()
-            val url = "http://steamcommunity.com/profiles/$myID/commentnotifications"
-            FragmentWeb.openPage(activity()!!, url, false)
+            me_notify_comments -> {
+                val myID = SteamService.singleton!!.steamClient!!.steamId.convertToLong()
+                val url = "http://steamcommunity.com/profiles/$myID/commentnotifications"
+                FragmentWeb.openPage(activity()!!, url, false)
+            }
         }
     }
 }

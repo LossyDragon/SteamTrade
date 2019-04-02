@@ -117,8 +117,8 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     override fun onPause() {
         super.onPause()
 
-        if (SteamService.singleton != null && SteamService.singleton!!.chatManager != null)
-            SteamService.singleton!!.chatManager!!.receivers.remove(this)
+        if (SteamService.singleton != null)
+            SteamService.singleton!!.chatManager?.receivers?.remove(this)
     }
 
     override//FriendsList menu onCreate. Search and Add Friend.
@@ -129,6 +129,7 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+
         if (item!!.itemId == R.id.menu_friends_add_friend) {
             val alert = AlertDialog.Builder(activity()!!)
             alert.setTitle(R.string.friend_add)
@@ -155,35 +156,38 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
     }
 
     override fun onClick(v: View) {
-        if (v.id == R.id.friend_chat_button) {
-            val id = v.tag as SteamID
-            if (activity()!!.steamFriends.getFriendRelationship(id) == EFriendRelationship.Friend) {
-                val fragment = FragmentChat()
+
+        when (v.id) {
+            R.id.friend_chat_button -> {
+                val id = v.tag as SteamID
+                if (activity()!!.steamFriends.getFriendRelationship(id) == EFriendRelationship.Friend) {
+                    val fragment = FragmentChat()
+                    val bundle = Bundle()
+                    bundle.putLong("steamId", id.convertToLong())
+                    fragment.arguments = bundle
+                    activity()!!.browseToFragment(fragment, true)
+                }
+            }
+            R.id.friend_request_accept -> {
+                val id = v.tag as SteamID
+                activity()!!.steamFriends.addFriend(id)
+                // accepted friend request
+                Toast.makeText(activity(), R.string.friend_request_accept, Toast.LENGTH_SHORT).show()
+            }
+            R.id.friend_request_reject -> {
+                val id = v.tag as SteamID
+                activity()!!.steamFriends.ignoreFriend(id, false)
+                // ignored friend request
+                Toast.makeText(activity(), R.string.friend_request_ignore, Toast.LENGTH_SHORT).show()
+            }
+            R.id.friends_list_item -> {
+                val id = v.tag as SteamID
+                val fragment = FragmentProfile()
                 val bundle = Bundle()
                 bundle.putLong("steamId", id.convertToLong())
                 fragment.arguments = bundle
                 activity()!!.browseToFragment(fragment, true)
             }
-        }
-        if (v.id == R.id.friend_request_accept) {
-            val id = v.tag as SteamID
-            activity()!!.steamFriends.addFriend(id)
-            // accepted friend request
-            Toast.makeText(activity(), R.string.friend_request_accept, Toast.LENGTH_SHORT).show()
-        }
-        if (v.id == R.id.friend_request_reject) {
-            val id = v.tag as SteamID
-            activity()!!.steamFriends.ignoreFriend(id, false)
-            // ignored friend request
-            Toast.makeText(activity(), R.string.friend_request_ignore, Toast.LENGTH_SHORT).show()
-        }
-        if (v.id == R.id.friends_list_item) {
-            val id = v.tag as SteamID
-            val fragment = FragmentProfile()
-            val bundle = Bundle()
-            bundle.putLong("steamId", id.convertToLong())
-            fragment.arguments = bundle
-            activity()!!.browseToFragment(fragment, true)
         }
     }
 
@@ -214,26 +218,29 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
         return true
     }
 
-    /** Fetch Game Names */
+    /* Fetch Game Names */
     private fun getGameData() {
         val steamFriends = SteamService.singleton!!.steamClient!!.getHandler<SteamFriends>(SteamFriends::class.java)
         val friendsList: List<SteamID> = steamFriends.friendList
 
         val data = SteamService.singleton!!.gameData
 
-        for (x in friendsList) {
 
-            val id = try {
-                steamFriends.getFriendGamePlayed(x).toString().toInt()
+        for (steamID in friendsList) {
+
+            val appID = try {
+                steamFriends.getFriendGamePlayed(steamID).toString().toInt()
             } catch (e: NumberFormatException) {
-                Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game. " + e.message)
+                //Log.w("SteamService:getGameData()", x.toString() + " is playing a Non-Steam Game. " + e.message)
                 -1
             }
 
-            if (id > 1 && !data.containsKey(x)) {
-                fetchGameData(x, id)
-            } else if (id <= 0) {
-                data.remove(x)
+            if (appID >= 1 && !data.containsKey(steamID)) {
+                Log.d("getGameData()", "Fetching game for: " + steamFriends.getFriendPersonaName(steamID) + " & " + steamFriends.getFriendGamePlayed(steamID))
+                fetchGameData(steamID, appID)
+            } else if (appID <= 0 && data.containsKey(steamID)) {
+                Log.d("getGameData()", "Removing game for: " + steamFriends.getFriendPersonaName(steamID) + " & " + steamFriends.getFriendGamePlayed(steamID))
+                data.remove(steamID)
             }
         }
     }
@@ -248,7 +255,7 @@ class FragmentFriends : FragmentBase(), OnClickListener, ChatReceiver, SearchVie
                     val detailsResponse = data!![id]
 
                     SteamService.singleton!!.gameData[steamID] = detailsResponse!!.data!!.name!!
-                    Log.d("SteamServiceGamesResponse", "detailsResponse got: " + SteamService.singleton!!.gameData[steamID])
+                    //Log.d("SteamServiceGamesResponse", "detailsResponse got: " + SteamService.singleton!!.gameData[steamID])
 
                     adapter!!.update(steamID)
                 }

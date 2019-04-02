@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
 import com.aegamesi.steamtrade.R
 import com.aegamesi.steamtrade.libs.GlideImageGetter
 import com.aegamesi.steamtrade.steam.SteamService
@@ -33,7 +32,6 @@ import uk.co.thomasc.steamkit.steam3.handlers.steamfriends.callbacks.SteamLevelC
 import uk.co.thomasc.steamkit.steam3.steamclient.callbackmgr.CallbackMsg
 import uk.co.thomasc.steamkit.types.steamid.SteamID
 import uk.co.thomasc.steamkit.util.cSharp.events.ActionT
-import java.util.*
 import java.util.regex.Pattern
 
 class FragmentProfile : FragmentBase(), View.OnClickListener {
@@ -47,10 +45,6 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
     
     var profileInfo: ProfileInfoCallback? = null
     var personaInfo: PersonaStateCallback? = null
-
-    companion object {
-        private const val AVATAR_BASE_URL = "http://media.steampowered.com/steamcommunity/public/images/avatars/"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -144,8 +138,8 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
     }
 
     fun updateView() {
-        if (activity() == null)
-            return
+
+        if (activity() == null) return
 
         relationship = activity()!!.steamFriends.getFriendRelationship(id)
         if (relationship == EFriendRelationship.Friend || personaInfo == null) {
@@ -153,14 +147,14 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
             relationship = activity()!!.steamFriends.getFriendRelationship(id)
             name = activity()!!.steamFriends.getFriendPersonaName(id)
             game = activity()!!.steamFriends.getFriendGamePlayedName(id)
-            avatar = SteamUtil.bytesToHex(activity()!!.steamFriends.getFriendAvatar(id)).toLowerCase(Locale.US)
+            avatar = SteamUtil.getAvatar(activity()!!.steamFriends.getFriendAvatar(id))
         } else {
             // use the found persona info stuff
             state = personaInfo!!.state
             relationship = activity()!!.steamFriends.getFriendRelationship(id)
             name = personaInfo!!.name
             game = personaInfo!!.gameName
-            avatar = SteamUtil.bytesToHex(personaInfo!!.avatarHash).toLowerCase(Locale.US)
+            avatar = SteamUtil.getAvatar(personaInfo!!.avatarHash)
         }
 
         profile_button_add_friend.setText(if (relationship == EFriendRelationship.RequestRecipient) R.string.friend_accept else R.string.friend_add)
@@ -184,23 +178,23 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
         profile_name.text = name
 
         Glide.with(activity()!!.applicationContext)
-                .load(AVATAR_BASE_URL + avatar!!.substring(0, 2) + "/" + avatar + "_full.jpg")
+                .load(avatar)
                 .placeholder(R.drawable.default_avatar)
                 .error(R.drawable.default_avatar)
                 .into(profile_avatar)
 
-        if (game!!.isEmpty())
+        if (game!!.isNotEmpty())
             profile_status.text = String.format(getString(R.string.profile_playing_game), game)
         else
             profile_status.text = state!!.toString()
 
-        var color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_online)
+        var color = resources.getColor(R.color.steam_online, null)
         if (relationship == EFriendRelationship.Blocked || relationship == EFriendRelationship.Ignored || relationship == EFriendRelationship.IgnoredFriend)
-            color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_blocked)
+            color = resources.getColor(R.color.steam_blocked, null)
         else if (game != null && game!!.isNotEmpty())
-            color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_game)
+            color = resources.getColor(R.color.steam_game, null)
         else if (state == EPersonaState.Offline || state == null)
-            color = ContextCompat.getColor(activity()!!.applicationContext, R.color.steam_offline)
+            color = resources.getColor(R.color.steam_offline, null)
 
         profile_name.setTextColor(color)
         profile_status.setTextColor(color)
