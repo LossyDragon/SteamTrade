@@ -76,11 +76,10 @@ class FragmentMe : FragmentBase(), OnClickListener, AdapterView.OnItemSelectedLi
     }
 
     fun updateView() {
-        if (activity()!!.isDestroyed || SteamService.singleton == null ||
+        if (activity!!.isDestroyed || SteamService.singleton == null ||
                 SteamService.singleton?.steamClient == null) {
             return
         }
-
 
         profile_avatar.setImageResource(R.drawable.default_avatar)
 
@@ -96,7 +95,7 @@ class FragmentMe : FragmentBase(), OnClickListener, AdapterView.OnItemSelectedLi
 
         Log.d("FragmentMe", "Loading avatar: $avatar")
 
-        //TODO: This has trouble loading avatar first time
+        //TODO: This STILL HAS trouble loading avatar first time
         Glide.with(activity()!!.applicationContext)
                 .load(avatar)
                 .into(profile_avatar)

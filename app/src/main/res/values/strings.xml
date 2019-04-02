@@ -90,6 +90,8 @@
         <item quantity="other">%d unread chat messages</item>
     </plurals>
 
+    <string name="x_notification_messages">%d unread chat messages</string>
+
     <!--Friends List Adapter -->
     <string name="friend_holder_nickname">%1$s (%2$s)</string>
     <string name="friend_holder_playing">Playing %1$s</string>
@@ -156,12 +158,6 @@
     <string name="prompt_remember">Remember</string>
     <string name="prompt_steamguard">Steam Guard Code</string>
     <string name="prompt_username">Username</string>
-
-    <!-- Notifications -->
-    <plurals name="x_new_messages">
-        <item quantity="one">%1$d message</item>
-        <item quantity="other">%1$d messages</item>
-    </plurals>
 
     <!-- General -->
     <string name="developed_by_aegamesi">Developed by aegamesi</string>

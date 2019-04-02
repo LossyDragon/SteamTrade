@@ -139,7 +139,7 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
 
     fun updateView() {
 
-        if (activity() == null) return
+        if (activity() == null || activity!!.isDestroyed) return
 
         relationship = activity()!!.steamFriends.getFriendRelationship(id)
         if (relationship == EFriendRelationship.Friend || personaInfo == null) {

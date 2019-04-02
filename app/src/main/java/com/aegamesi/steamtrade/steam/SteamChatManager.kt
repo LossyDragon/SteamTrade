@@ -183,7 +183,7 @@ class SteamChatManager internal constructor(private val context: Context) {
                 friendNames.append(friendName)
             }
 
-            val result = context.resources.getQuantityString(R.plurals.x_new_messages, unreadMessages.size)
+            val result = String.format(context.resources.getString(R.string.x_notification_messages, unreadMessages.size))
 
             builder.setContentTitle(result)
             builder.setContentText(friendNames)
