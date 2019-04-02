@@ -146,7 +146,7 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
             state = activity()!!.steamFriends.getFriendPersonaState(id)
             relationship = activity()!!.steamFriends.getFriendRelationship(id)
             name = activity()!!.steamFriends.getFriendPersonaName(id)
-            game = activity()!!.steamFriends.getFriendGamePlayedName(id)
+            //game = activity()!!.steamFriends.getFriendGamePlayedName(id)
             avatar = SteamUtil.getAvatar(activity()!!.steamFriends.getFriendAvatar(id))
         } else {
             // use the found persona info stuff
@@ -155,6 +155,12 @@ class FragmentProfile : FragmentBase(), View.OnClickListener {
             name = personaInfo!!.name
             game = personaInfo!!.gameName
             avatar = SteamUtil.getAvatar(personaInfo!!.avatarHash)
+        }
+
+        game = if (SteamService.singleton!!.gameData.containsKey(id)) {
+            SteamService.singleton!!.gameData[id]
+        } else {
+            activity()!!.steamFriends.getFriendGamePlayedName(id)
         }
 
         profile_button_add_friend.setText(if (relationship == EFriendRelationship.RequestRecipient) R.string.friend_accept else R.string.friend_add)
